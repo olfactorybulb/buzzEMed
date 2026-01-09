@@ -2,11 +2,14 @@ Package: ebmeddev
 Title: Bayesian Mediation Analysis for Multiple Predictors and Mediators in R
 Version: 0.0.0.9000
 Authors@R:
-    person(Chih-Chia, Hsing, , "jesscc.hsing@gmail.com", role = c("aut", "cre"))
-    person(Dingjing, Shi, , "dshi32@gatech.edu", role = c("aut"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(
+      person(given = "Chih-Chia", family = "Hsing",
+             email = "jesscc.hsing@gmail.com", role = c("aut", "cre")),
+      person(given = "Dingjing", family = "Shi",
+             email = "dshi32@gatech.edu", role = "aut")
+    )
+Description: ebmeddev is an R package for running Empirical Bayes Mediation (EBMed) models.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

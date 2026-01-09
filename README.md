@@ -1,7 +1,9 @@
 # ebmeddev v0.1.0
 
 **Author:** Jess Hsing, Dingjing Shi
+
 **Email:** jesscc.hsing@gmail.com
+
 **Bayesian Mediation Analysis for Multiple Predictors and Mediators in R**
 
 ---

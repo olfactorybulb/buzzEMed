@@ -1,5 +1,7 @@
-library(ebmeddev)
+# Run this line to pull the package if you haven't already
+#devtools::install_github("olfactorybulb/ebmeddev")
 
+library(ebmeddev)
 #### 1. Load dataset ----
 College <- read.csv("https://raw.githubusercontent.com/selva86/datasets/master/College.csv")
 # select only public schools
