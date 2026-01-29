@@ -8,10 +8,8 @@
 #' This function only builds and returns the JAGS model string.
 #' Model fitting and posterior sampling are handled by \code{\link{run_ebmed}}.
 #'
-#' @param P Integer. Number of predictors in the model.
 #' @param K Integer. Number of mediators in the model.
-#' @param Y_cont Logical. Whether the outcome is continuous (\code{TRUE}) or binary (\code{FALSE}).
-#' @param M_cont Logical. Whether the mediators are continuous (\code{TRUE}) or binary (\code{FALSE}).
+#' @param P Integer. Number of predictors in the model.
 #' @param shape_m Numeric. Shape parameter for the gamma prior on mediator residual precisions (\code{prec.m[j]}). Default = 1.
 #' @param rate_m Numeric. Rate parameter for the gamma prior on mediator residual precisions. Default = 0.001.
 #' @param shape_y Numeric. Shape parameter for the gamma prior on outcome residual precision (\code{prec.y}). Default = 1.
@@ -22,9 +20,9 @@
 #' @param rate_b Numeric. Rate parameter for the gamma prior on the b-path slab precision. Default = 0.001.
 #' @param alpha_ind Numeric. Alpha parameter for the beta prior on inclusion probability (\code{ind.p}). Default = 3.
 #' @param beta_ind Numeric. Beta parameter for the beta prior on inclusion probability. Default = 3.
-#' @param tau_cprime Numeric. Precision for the normal prior on direct effects of predictors (\code{c.prime}). Default = 1e-6.
+#' @param tau_cprime Numeric. Precision for the normal prior on direct effects of predictors (\code{c.prime}). Default = 1.0E-6.
 #'
-#' @return Character string. JAGS model specification ready to be passed to \code{\link{run_ebmed}}.
+#' @return A character string containing the JAGS model specification.
 #'
 #' @details
 #' The returned model assumes the following data are supplied to JAGS:
@@ -49,8 +47,8 @@
 #' @keywords internal
 #' @noRd
 
-build_ebmed_model <- function(P, K,
-                              Y_cont, M_cont,
+
+build_ebmed_model_mcont_ycont <- function(P, K,
                               shape_m, rate_m,
                               shape_y, rate_y,
                               shape_a, rate_a,
@@ -80,79 +78,47 @@ build_ebmed_model <- function(P, K,
   b_effect_string <- ""
 
   for (k in 1:K) {
-    if (M_cont) {
-      a_effect_string <- paste0(
-        a_effect_string,
-        "m", k, "[i] ~ dnorm(mu.m", k, "[i], prec.m[", k, "])\n",
-        "mu.m", k, "[i] <- inprod(X[i, ], a[", k, ",])\n\n"
-      )
-    } else {
-      a_effect_string <- paste0(
-        a_effect_string,
-        "logit(p", k, "[i]) <- inprod(X[i, ], a[", k, ",])\n",
-        "m", k, "[i] ~ dbern(p", k, "[i])\n\n"
-      )
-    }
+    a_effect_string <- paste0(
+      a_effect_string,
+      "m", k, "[i] ~ dnorm(mu.m", k, "[i], prec.m[", k, "])\n",
+      "mu.m", k, "[i] <- inprod(X[i, ], a[", k, ",])\n\n"
+    )
     b_effect_string <- paste0(
       b_effect_string,
       "+ inprod(m",k,"[i],b[",k,"])"
     )
   }
 
-  if (Y_cont) {
-    b_block <- paste0(
-      "for (i in 1:N) {\n",
-      "  y[i] ~ dnorm(mu.y[i], prec.y)\n",
-      "  mu.y[i] <- inprod(X[i, ], c.prime[]) ", b_effect_string, "\n",
-      "}\n"
-    )
 
-    hyperparam <- paste0(
-      "prec.y ~ dgamma(", shape_y, ", ", rate_y, ")
-      taua   ~ dgamma(", shape_a, ", ", rate_a, ")
-      taub   ~ dgamma(", shape_b, ", ", rate_b, ")
-      ind.p  ~ dbeta(", alpha_ind, ", ", beta_ind, ")"
-    )
-  } else {
-    b_block <- paste0(
-      "for (i in 1:N) {\n",
-      "  y[i] ~ dbern(p[i])\n",
-      "  logit(p[i]) <- inprod(X[i, ], c.prime[]) ", b_effect_string, "\n",
-      "}\n"
-    )
 
-    hyperparam <- paste0(
-      "taua   ~ dgamma(", shape_a, ", ", rate_a, ")
-      taub   ~ dgamma(", shape_b, ", ", rate_b, ")
-      ind.p  ~ dbeta(", alpha_ind, ", ", beta_ind, ")"
-    )
-  }
-
-  # The Actual String ----
   modelstring <- paste0("
 model {
 
   ## a effects (X -> mediators)
-  for (i in 1:N) {
-      ",a_effect_string,"
-      }
+  for (i in 1:N) {",
+                        a_effect_string,
+                        "}
 
   for (j in 1:", K, ") {
     ind.a[j] ~ dbern(ind.p)
     for (p in 1:", P, ") {
       a[j, p] <- ind.a[j] * aI[j, p]
-      aI[j, p] ~ dnorm(0, taua)
+      aI[j, p] ~ dnorm(0, ", shape_a / rate_a, ")
     }
     prec.m[j] ~ dgamma(", shape_m, ", ", rate_m, ")
   }
 
   ## b effects (mediators -> y)
-    ",b_block,"
+  for (i in 1:N) {
+    y[i] ~ dnorm(mu.y[i], prec.y)
+    mu.y[i] <- inprod(X[i, ], c.prime[])",
+                        b_effect_string, "
+  }
 
   for (j in 1:", K, ") {
     ind.b[j] ~ dbern(ind.p)
     b[j] <- ind.b[j] * bI[j]
-    bI[j] ~ dnorm(0, taub)
+    bI[j] ~ dnorm(0, ", shape_b / rate_b, ")
   }
 
   ## Direct effects for predictors
@@ -161,9 +127,13 @@ model {
   }
 
   ## Hyperparameters
-  ",hyperparam,"
+  prec.y ~ dgamma(", shape_y, ", ", rate_y, ")
+  taua   ~ dgamma(", shape_a, ", ", rate_a, ")
+  taub   ~ dgamma(", shape_b, ", ", rate_b, ")
+  ind.p  ~ dbeta(", alpha_ind, ", ", beta_ind, ")
+
   ## Joint inclusion indicators
-  ind.joint <- ind.a*ind.b
+  ind.joint <- ind.a * ind.b
 }
 ")
 

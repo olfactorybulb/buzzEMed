@@ -8,7 +8,7 @@
 #' @param output A Bayesian model output object. Must respond to \code{summary(output)$statistics}.
 #' @param X An optional character vector containing the names of the independent variables.
 #'   Used to rename double-indexed parameters like path coefficients \code{aI[mediator, X]}.
-#' @param mediators An optional character vector containing the names of the mediators.
+#' @param M An optional character vector containing the names of the mediators.
 #'   Used to rename single-indexed (e.g., \code{bI[1]}) and double-indexed parameters.
 #' @param params A character vector of parameter name prefixes to filter for.
 #'   Regex is used to match the start of the row names. Defaults to \code{c("ind.joint", "ind.p")}.
@@ -22,7 +22,7 @@
 
 extract_ebmed_results <- function(output,
                                   X = NULL,
-                                  mediators = NULL,
+                                  M = NULL,
                                   params = c("ind.joint", "ind.p"),
                                   stats = "Mean")
   {
@@ -37,22 +37,22 @@ extract_ebmed_results <- function(output,
   new_names <- rownames(subset_mat)
 
   # 3. Conditional Renaming for Mediators [i]
-  if (!is.null(mediators)) {
-    for (i in seq_along(mediators)) {
+  if (!is.null(M)) {
+    for (i in seq_along(M)) {
       # Matches [i] but ensures it's not part of a [i,j] pair
       # Uses negative lookahead/lookbehind logic via regex
       single_pattern <- paste0("\\[", i, "\\]")
-      new_names <- gsub(single_pattern, paste0("[", mediators[i], "]"), new_names)
+      new_names <- gsub(single_pattern, paste0("[", M[i], "]"), new_names)
     }
   }
 
   # 4. Conditional Renaming for Paths [i,j]
-  if (!is.null(mediators) && !is.null(X)) {
-    for (m in seq_along(mediators)) {
+  if (!is.null(M) && !is.null(X)) {
+    for (m in seq_along(M)) {
       for (x_idx in seq_along(X)) {
         double_pattern <- paste0("\\[", m, ",", x_idx, "\\]")
         new_names <- gsub(double_pattern,
-                          paste0("[", mediators[m], ", ", X[x_idx], "]"),
+                          paste0("[", M[m], ", ", X[x_idx], "]"),
                           new_names)
       }
     }

@@ -4,21 +4,15 @@
 #' empirical Bayes variable selection. The function prepares the data,
 #' constructs the JAGS model, runs MCMC sampling, and returns posterior samples.
 #'
-#' @param data A data.frame containing the outcome, predictors, and mediators.
+#' @param dataset A data.frame containing the outcome, predictors, and mediators.
 #' @param X A string or character vector giving the name(s) of the predictor
-#'   variable(s) in \code{data}.
-#' @param y A string giving the name of the outcome variable in \code{data}.
-#' @param mediators A character vector giving the names of mediator variables
-#'   in \code{data}.
+#'   variable(s) in \code{dataset}.
+#' @param Y A string giving the name of the outcome variable in \code{dataset}.
+#' @param M A character vector giving the names of mediator variables
+#'   in \code{dataset}.
 #'
-#' @param scale Logical; whether to standardize \code{X}, \code{y}, and mediators
+#' @param scale Logical; whether to standardize \code{X}, \code{Y}, and \code{M}
 #'   before fitting the model. Default is \code{TRUE}.
-#'
-#' @param shape_m Numeric. Shape parameter for the gamma prior on mediator
-#'   residual precisions (\code{prec.m[j]}). If NULL, a dgamma(1, 0.001)
-#'   prior is used (default).
-#' @param rate_m Numeric. Rate parameter for the gamma prior on mediator
-#'   residual precisions. If NULL, a dgamma(1, 0.001) prior is used (default).
 #'
 #' @param shape_y Numeric. Shape parameter for the gamma prior on the outcome
 #'   residual precision (\code{prec.y}). If NULL, a dgamma(1, 0.001)
@@ -49,6 +43,8 @@
 #'   of predictors (\code{c.prime}). If NULL, a dnorm(0, 1.0E-6)
 #'   prior is used (default).
 #'
+#' @param prec.m Numeric. Initial value for the for the direct effect.
+#'   If NULL, initialized at 1 (default).
 #' @param prec.y Numeric. Initial value for the outcome residual precision.
 #'   If NULL, initialized at 1 (default).
 #' @param c.prime Numeric. Initial value for the direct effects (\code{X -> Y}).
@@ -85,18 +81,18 @@
 #' @export
 
 
-fit_ebmed <- function(
-    data,
+fit_ebmed_mcat_ycont <- function(
+    dataset,
     X,
-    y,
-    mediators,
+    M,
+    Y,
     scale = NULL,
-    shape_m = NULL, rate_m = NULL,
     shape_y = NULL, rate_y = NULL,
     shape_a = NULL, rate_a = NULL,
     shape_b = NULL, rate_b = NULL,
     alpha_ind = NULL, beta_ind = NULL,
     tau_cprime = NULL,
+    prec.m = NULL,
     prec.y = NULL,
     c.prime = NULL,
     taua = NULL,
@@ -109,29 +105,27 @@ fit_ebmed <- function(
 ) {
 
   ## number of mediators
-  K <- length(mediators)
   P <- length(X)
+  K <- length(M)
+
+  Y_cont <- TRUE
+  M_cont <- FALSE
 
   ## 1. prepare data
-  bdata <- prepare_ebmed_data(
-    data = data,
-    X = X,
-    y = y,
-    mediators = mediators,
-    scale = scale
-  )
+  bdata <- prepare_ebmed_data(dataset, X, M, Y, M_cont, Y_cont, scale)
 
   ## 2. build model
-  modelstring <- build_ebmed_model(P,K,
-                                   shape_m = shape_m, rate_m = rate_m,
-                                   shape_y = shape_y, rate_y = rate_y,
-                                   shape_a = shape_a, rate_a = rate_a,
-                                   shape_b = shape_b, rate_b = rate_b,
-                                   alpha_ind = alpha_ind, beta_ind = beta_ind,
-                                   tau_cprime = tau_cprime)
+  modelstring <- build_ebmed_model_mcat_ycont(P,K,
+                                              shape_y, rate_y,
+                                              shape_a, rate_a,
+                                              shape_b, rate_b,
+                                              alpha_ind, beta_ind,
+                                              tau_cprime)
 
   ## 3. initial values
   init <- define_init_values(P,K,
+                             M_cont, Y_cont,
+                             prec.m = prec.m,
                              prec.y = prec.y,
                              c.prime = c.prime,
                              taua = taua,
@@ -143,6 +137,7 @@ fit_ebmed <- function(
     modelstring = modelstring,
     bdata = bdata,
     init = init,
+    M_cont, Y_cont,
     n_burnin = n_burnin,
     n_iter = n_iter,
     thin = thin,

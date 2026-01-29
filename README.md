@@ -56,3 +56,7 @@ summary(fit)
 ## Citation
 If you use `ebmeddev` in your research, please cite:
 Dingjing Shi, Dexin Shi & Amanda J. Fairchild (2023) Variable Selection for Mediators under a Bayesian Mediation Model, Structural Equation Modeling: A Multidisciplinary Journal, 30:6, 887-900, DOI: 10.1080/10705511.2022.2164285
+
+## License
+This project is licensed under the GNU General Public License v3.0.
+See the LICENSE file for details.

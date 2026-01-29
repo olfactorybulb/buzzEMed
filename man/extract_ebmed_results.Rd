@@ -7,7 +7,7 @@
 extract_ebmed_results(
   output,
   X = NULL,
-  mediators = NULL,
+  M = NULL,
   params = c("ind.joint", "ind.p"),
   stats = "Mean"
 )
@@ -18,7 +18,7 @@ extract_ebmed_results(
 \item{X}{An optional character vector containing the names of the independent variables.
 Used to rename double-indexed parameters like path coefficients \code{aI[mediator, X]}.}
 
-\item{mediators}{An optional character vector containing the names of the mediators.
+\item{M}{An optional character vector containing the names of the mediators.
 Used to rename single-indexed (e.g., \code{bI[1]}) and double-indexed parameters.}
 
 \item{params}{A character vector of parameter name prefixes to filter for.
