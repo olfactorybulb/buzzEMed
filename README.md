@@ -1,4 +1,4 @@
-# ebmeddev v0.1.0
+# buzzMed v0.1.0
 
 **Bayesian Understanding of Mediation Selection in Exploratory Mediation Analysis**
 
@@ -118,7 +118,7 @@ output_mcat_ycat <- buzzMYcat(dataset, X, M_cat, Y_cat)
 ## Example: Automatic model selection
 The same model can be fit using automatic dispatch based on variable types:
 
-```
+```r
 output_mcont_ycont_auto <- buzzEBMedAuto(dataset, X, M_cont, Y_cont)
 output_mcont_ycat_auto <- buzzEBMedAuto(dataset, X, M_cont, Y_cat)
 output_mcat_ycont_auto <- buzzEBMedAuto(dataset, X, M_cat, Y_cont)
@@ -128,7 +128,7 @@ output_mcat_ycat_auto <- buzzEBMedAuto(dataset, X, M_cat, Y_cat)
 # Example: Set your own parameters
 You can also set up your own parameters:
 
-```
+```r
 # Conduct buzzMed analysis with your own parameters
 output <- buzzMYcont(
   dataset,
