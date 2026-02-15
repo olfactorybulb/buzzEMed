@@ -1,9 +1,7 @@
-#' Fit an Empirical Bayesian Mediation (EBMed) Model (Automatic Dispatcher)
+#' Auto detecting variable types and selecting mediation effects (Automatic dispatcher)
 #'
-#' Fits an empirical Bayesian mediation model with multiple candidate mediators
-#' using spike-and-slab variable selection. This function automatically detects
-#' whether the mediator(s) and outcome are continuous or binary and dispatches
-#' to the appropriate EBMed model implementation.
+#' This function automatically detects the data types of the outcome variables and dispatches
+#' to the appropriate buzzMed model implementation.
 #'
 #' The function prepares the data, constructs the corresponding JAGS model,
 #' runs MCMC sampling, and returns posterior samples.
@@ -74,9 +72,6 @@
 #'   If NULL, 10000 iterations are used (default).
 #' @param thin Integer. Thinning interval for MCMC samples.
 #'   If NULL, no thinning is applied (default = 1).
-#' @param vars Character vector of parameter names to monitor in JAGS.
-#'   If NULL, a default set of mediation effects, precisions, and inclusion
-#'   indicators is monitored.
 #'
 #' @return
 #' An object of class \code{mcmc.list} containing posterior samples from JAGS.
@@ -84,8 +79,8 @@
 #' @details
 #' This function serves as a wrapper and automatic dispatcher. Based on whether
 #' the mediator(s) and outcome are continuous or binary, it calls one of:
-#' \code{fit_ebmed_mcont_ycont}, \code{fit_ebmed_mcat_ycont},
-#' \code{fit_ebmed_mcont_ycat}, or \code{fit_ebmed_mcat_ycat}.
+#' \code{buzzMYcont}, \code{buzzMcat},
+#' \code{buzzYcat}, or \code{buzzMYcat}.
 #'
 #' Internally, this function relies on \code{prepare_ebmed_data()},
 #' \code{build_ebmed_model()}, \code{define_init_values()},
@@ -94,7 +89,7 @@
 #' @export
 
 
-fit_ebmed_auto <- function(
+buzzEBMedAuto <- function(
     dataset,
     X,
     M,
@@ -114,8 +109,7 @@ fit_ebmed_auto <- function(
     ind.p = NULL,
     n_burnin = NULL,
     n_iter = NULL,
-    thin = NULL,
-    vars = NULL
+    thin = NULL
 ) {
   # 1. Capture all possible inputs (from header and the dots)
   # This creates a master list of everything the user provided
@@ -142,13 +136,13 @@ fit_ebmed_auto <- function(
 
   # Select the target function based on types
   target_fun <- if (M_cont && Y_cont) {
-    "fit_ebmed_mcont_ycont"
+    "buzzMYcont"
   } else if (!M_cont && Y_cont) {
-    "fit_ebmed_mcat_ycont"
+    "buzzMcat"
   } else if (M_cont && !Y_cont){
-    "fit_ebmed_mcont_ycat"
+    "buzzYcat"
   } else{
-    "fit_ebmed_mcat_ycat"
+    "buzzMYcat"
   }
 
   # 3. THE SMART FILTER: Only keep arguments that exist in the target function

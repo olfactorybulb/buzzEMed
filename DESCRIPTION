@@ -1,6 +1,6 @@
-Package: ebmeddev
-Title: Bayesian Mediation Analysis for Multiple Predictors and Mediators in R
-Version: 0.0.0.9000
+Package: buzzMed
+Title: Bayesian Understanding of Mediation Selection in Exploratory Mediation Analysis
+Version: 0.0.1.0
 Authors@R:
     c(
       person(given = "Chih-Chia", family = "Hsing",
@@ -8,7 +8,7 @@ Authors@R:
       person(given = "Dingjing", family = "Shi",
              email = "dshi32@gatech.edu", role = "aut")
     )
-Description: ebmeddev is an R package for running Empirical Bayes Mediation (EBMed) models.
+Description: The buzzMed package offers a tool for selecting mediating effects within exploratory Bayesian mediation models. It accommodates both continuous and dichotomous outcomes, including the dependent variables and the mediators for identifying and analyzing mediation pathways.
 License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -1,7 +1,7 @@
-#' Extract and Label Bayesian Mediation Results
+#' Extract and Label Exploratory Bayesian Mediation Analysis Results
 #'
 #' @description
-#' This function subsets a statistics matrix from a Bayesian mediation model output (typically from JAGS or BUGS).
+#' This function subsets a statistics matrix from a Bayesian mediation model output (typically from JAGS).
 #' It filters for specific parameters and statistics while optionally replacing numeric indices
 #' (e.g., `[1]`, `[1,2]`) with descriptive variable names provided by the user.
 #'
@@ -11,7 +11,7 @@
 #' @param M An optional character vector containing the names of the mediators.
 #'   Used to rename single-indexed (e.g., \code{bI[1]}) and double-indexed parameters.
 #' @param params A character vector of parameter name prefixes to filter for.
-#'   Regex is used to match the start of the row names. Defaults to \code{c("ind.joint", "ind.p")}.
+#'   Regular expressions(regex) is used to match the start of the row names. Defaults to \code{c("apath", "bpath")}.
 #' @param stats A character vector of the statistics to return. Options include
 #'   \code{"mean"}, \code{"sd"}, \code{"naive_se"}, and \code{"ts_se"}. Defaults to \code{"mean"}.
 #'
@@ -20,10 +20,10 @@
 #'
 #' @export
 
-extract_ebmed_results <- function(output,
+buzzExtractResults <- function(output,
                                   X = NULL,
                                   M = NULL,
-                                  params = c("ind.joint", "ind.p"),
+                                  params = c("apath", "bpath"),
                                   stats = "Mean")
   {
   # 1. Extract the statistics matrix

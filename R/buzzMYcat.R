@@ -1,8 +1,8 @@
-#' Fit an Empirical Bayesian Mediation (EBMed) Model
+#' Fit an exploratory Bayesian mediation model.
 #'
-#' Fits a Bayesian mediation model with multiple candidate mediators using
-#' empirical Bayes variable selection. The function prepares the data,
-#' constructs the JAGS model, runs MCMC sampling, and returns posterior samples.
+#' Fits an explanatory Bayesian mediation model with binary mediators and binary
+#' dependent variables. The function prepares the data, constructs the JAGS model,
+#' runs MCMC sampling, and returns posterior samples.
 #'
 #' @param dataset A data.frame containing the outcome, predictors, and mediators.
 #' @param X A string or character vector giving the name(s) of the predictor
@@ -10,15 +10,6 @@
 #' @param Y A string giving the name of the outcome variable in \code{dataset}.
 #' @param M A character vector giving the names of mediator variables
 #'   in \code{dataset}.
-#'
-#' @param scale Logical; whether to standardize \code{X}, \code{Y}, and \code{M}
-#'   before fitting the model. Default is \code{TRUE}.
-#'
-#' @param shape_m Numeric. Shape parameter for the gamma prior on mediator
-#'   residual precisions (\code{prec.m[j]}). If NULL, a dgamma(1, 0.001)
-#'   prior is used (default).
-#' @param rate_m Numeric. Rate parameter for the gamma prior on mediator
-#'   residual precisions. If NULL, a dgamma(1, 0.001) prior is used (default).
 #'
 #' @param shape_a Numeric. Shape parameter for the gamma prior on the slab
 #'   precision of the \eqn{a} paths. If NULL, a dgamma(1, 0.001)
@@ -62,17 +53,12 @@
 #'   If NULL, 10000 iterations are used (default).
 #' @param thin Integer. Thinning interval for MCMC samples.
 #'   If NULL, no thinning is applied (default = 1).
-#' @param vars Character vector of parameter names to monitor in JAGS.
-#'   If NULL, mediation effects, precisions, and inclusion indicators are
-#'   monitored by default.
 #'
 #' @return
 #' An object of class \code{mcmc.list} containing posterior samples from JAGS.
 #'
 #' @details
-#' The EBMed model estimates indirect effects through multiple mediators using
-#' spike-and-slab priors on the \eqn{a} and \eqn{b} paths. Inclusion indicators
-#' enable automatic selection of mediators with nonzero indirect effects.
+#' The function estimates mediating effects under Exploratory Bayesian Mediation Analysis.
 #'
 #' Internally, this function calls \code{prepare_ebmed_data()},
 #' \code{build_ebmed_model()}, \code{define_init_values()},
@@ -81,13 +67,11 @@
 #' @export
 
 
-fit_ebmed_mcont_ycat <- function(
+buzzMYcat <- function(
     dataset,
     X,
     M,
     Y,
-    scale = NULL,
-    shape_m = NULL, rate_m = NULL,
     shape_a = NULL, rate_a = NULL,
     shape_b = NULL, rate_b = NULL,
     alpha_ind = NULL, beta_ind = NULL,
@@ -100,8 +84,7 @@ fit_ebmed_mcont_ycat <- function(
     ind.p = NULL,
     n_burnin = NULL,
     n_iter = NULL,
-    thin = NULL,
-    vars = NULL
+    thin = NULL
 ) {
 
   ## number of mediators
@@ -109,14 +92,13 @@ fit_ebmed_mcont_ycat <- function(
   K <- length(M)
 
   Y_cont <- FALSE
-  M_cont <- TRUE
+  M_cont <- FALSE
 
   ## 1. prepare data
-  bdata <- prepare_ebmed_data(dataset, X, M, Y, M_cont, Y_cont, scale)
+  bdata <- prepare_ebmed_data(dataset, X, M, Y, M_cont, Y_cont)
 
   ## 2. build model
-  modelstring <- build_ebmed_model_mcont_ycat(P,K,
-                                             shape_m, rate_m,
+  modelstring <- build_ebmed_model_mcat_ycat(P, K,
                                              shape_a, rate_a,
                                              shape_b, rate_b,
                                              alpha_ind, beta_ind,
@@ -140,8 +122,7 @@ fit_ebmed_mcont_ycat <- function(
     M_cont, Y_cont,
     n_burnin = n_burnin,
     n_iter = n_iter,
-    thin = thin,
-    vars = vars
+    thin = thin
   )
 
   return(output)
