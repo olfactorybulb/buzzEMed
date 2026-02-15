@@ -1,6 +1,6 @@
 Package: buzzMed
 Title: Bayesian Understanding of Mediation Selection in Exploratory Mediation Analysis
-Version: 0.0.1.0
+Version: 0.1.0
 Authors@R:
     c(
       person(given = "Chih-Chia", family = "Hsing",
@@ -15,3 +15,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     rjags
+Language: en-US
