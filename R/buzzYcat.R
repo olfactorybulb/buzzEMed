@@ -69,6 +69,38 @@
 #' \code{build_ebmed_model()}, \code{define_init_values()},
 #' and \code{run_ebmed_jags()}.
 #'
+#' @examples
+#' # 1. Create a small data set for testing (Y is binary and M is continuous)
+#' set.seed(123)
+#' toy_data <- data.frame(
+#'   outcome = rbinom(50, 1, 0.5),
+#'   predictor = rbinom(50, 1, 0.5),
+#'   mediator1 = rnorm(50),
+#'   mediator2 = rnorm(50)
+#' )
+#'
+#' # 2. Run a quick model with just a few iterations
+#' results <- buzzYcat(
+#'   dataset = toy_data,
+#'   X = "predictor",
+#'   Y = "outcome",
+#'   M = c("mediator1", "mediator2"),
+#'   n_burnin = 10,
+#'   n_iter = 50
+#' )
+#'
+#' \dontrun{
+#' # With more realistic MCMC settings you will want to run more iterations
+#' results_full <- buzzYcat(
+#'   dataset = your_real_data,
+#'   X = "exposure",
+#'   Y = "disease",
+#'   M = c("biomarker1", "biomarker2"),
+#'   n_burnin = 1000,
+#'   n_iter = 10000
+#' )
+#' }
+#'
 #' @export
 
 

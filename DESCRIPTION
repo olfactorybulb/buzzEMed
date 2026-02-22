@@ -1,6 +1,7 @@
 Package: buzzMed
 Title: Bayesian Understanding of Mediation Selection in Exploratory Mediation Analysis
-Version: 0.1.0
+Version: 0.1.1
+Date: 2026-02-22
 Authors@R:
     c(
       person(given = "Chih-Chia", family = "Hsing",
@@ -13,6 +14,12 @@ License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
+SystemRequirements: JAGS (>= 4.3.0)
 Imports:
     rjags
 Language: en-US
+URL: <https://github.com/olfactorybulb/buzzMed>
+BugReports: https://github.com/olfactorybulb/buzzMed/issues
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
