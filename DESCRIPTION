@@ -21,5 +21,6 @@ Language: en-US
 URL: <https://github.com/olfactorybulb/buzzMed>
 BugReports: https://github.com/olfactorybulb/buzzMed/issues
 Suggests:
+    spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

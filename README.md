@@ -1,4 +1,4 @@
-# buzzMed v0.1.0
+# buzzMed v0.1.1
 
 **Bayesian Understanding of Mediation Selection in Exploratory Mediation Analysis**
 
