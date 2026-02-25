@@ -2,9 +2,9 @@
 
 **Bayesian Understanding of Mediation Selection in Exploratory Mediation Analysis**
 
-**Authors:** Jess Hsing, Dingjing Shi
+**Authors:** Dingjing Shi, Tansu Celikel, Dexin Shi, Chih-Chia (Jess) Hsing
 
-**Contact:** jesscc.hsing@gmail.com
+**Contact:** dshi32@gatech.edu
 
 ---
 
