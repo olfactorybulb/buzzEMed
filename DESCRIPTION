@@ -1,36 +1,36 @@
 Package: buzzMed
 Version: 0.1.2
-Date: 2026-03-17
+Date: 2026-03-20
 Title: Bayesian Understanding of Mediation Selection in Exploratory
     Mediation Analysis
 Authors@R: c(
-    person("Chih-Chia", "Hsing", "jesscc.hsing@gmail.com", role = c("aut", "cre")),
-    person("Dingjing", "Shi", "dshi32@gatech.edu", role = "aut"),
+    person("Dingjing", "Shi", "dshi32@gatech.edu", role = c("aut", "cre")),
+    person("Tansu", "Celikel", role = "aut"),
     person("Dexin", "Shi", role = "aut"),
-    person("Tansu", "Celikel", role = "aut")
+    person("Chih-Chia", "Hsing", "jesscc.hsing@gmail.com", role = "ctb")
   )
 Description:
-    For selecting mediating effects within exploratory Bayesian mediation
-    models (Shi, Shi & Fairchild, 2023, <doi:10.1080/10705511.2022.2164285>).
-    Package buzzMed accommodates both continuous and dichotomous outcomes,
+    A tool for selecting mediating effects within exploratory Bayesian mediation
+    models. BuzzMed accommodates both continuous and dichotomous outcomes,
     including the dependent variables and the mediators for identifying and
     analyzing mediation pathways.
 License: GPL (>= 3) + file LICENSE
-Imports: knitr, rjags
+Imports: knitr, rjags, coda
 Suggests: spelling, testthat (>= 3.0.0)
 LazyData: yes
 ByteCompile: false
 VignetteBuilder: knitr
 URL: <https://github.com/olfactorybulb/buzzMed>
 BugReports: https://github.com/olfactorybulb/buzzMed/issues
-NeedsCompilation: no
+NeedsCompilation: yes
 Authors:
-    Chih-Chia Hsing [aut,cre],
-    Dingjing Shi [aut],
+    Dingjing Shi [aut,cre],
+    Tansu Celikel [aut,cre],
     Dexin Shi [aut],
-    Tansu Celikel [ctb]
+    Chih-Chia Hsing [ctb]
 Maintainer: Chih-Chia Hsing <jesscc.hsing@gmail.com>
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
+Repository: CRAN

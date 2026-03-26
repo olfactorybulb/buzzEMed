@@ -18,7 +18,7 @@
 #' @return A matrix with filtered rows and columns, with row names updated to include
 #'   descriptive variable names if provided.
 #'
-#' @export
+#' @noRd
 
 buzzExtractResults <- function(output,
                                   X = NULL,

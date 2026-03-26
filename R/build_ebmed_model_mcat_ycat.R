@@ -3,15 +3,15 @@
 #' Constructs a JAGS model specification for the empirical Bayesian
 #' mediation (EBMed) model with binary mediators and a binary outcome.
 #'
-#' @param K Integer. Number of mediators.
-#' @param P Integer. Number of predictors.
-#' @param shape_a Numeric. Shape for the gamma prior on a-path slab precision.
-#' @param rate_a Numeric. Rate for the gamma prior on a-path slab precision.
-#' @param shape_b Numeric. Shape for the gamma prior on b-path slab precision.
-#' @param rate_b Numeric. Rate for the gamma prior on b-path slab precision.
-#' @param alpha_ind Numeric. Alpha for the beta prior on inclusion probability.
-#' @param beta_ind Numeric. Beta for the beta prior on inclusion probability.
-#' @param tau_cprime Numeric. Precision for the normal prior on direct effects.
+#' @param K Integer. Number of mediators in the model.
+#' @param P Integer. Number of predictors in the model.
+#' @param a.prec_shape Numeric. Shape parameter for the gamma prior on the a-path slab precision (\code{a.coef.hyperprec}). Default = 1.
+#' @param a.prec_rate Numeric. Rate parameter for the gamma prior on the a-path slab precision. Default = 0.001.
+#' @param b.prec_shape Numeric. Shape parameter for the gamma prior on the b-path slab precision (\code{b.coef.hyperprec}). Default = 1.
+#' @param b.prec_rate Numeric. Rate parameter for the gamma prior on the b-path slab precision. Default = 0.001.
+#' @param a.pip.hyperalpha Numeric. Alpha parameter for the beta prior on inclusion probability (\code{ind.p}). Default = 3.
+#' @param a.pip.hyperbeta Numeric. Beta parameter for the beta prior on inclusion probability. Default = 3.
+#' @param c.prime_precision Numeric. Precision for the normal prior on direct effects of predictors (\code{c.prime}). Default = 1.0E-6.
 #'
 #' @return A character string containing the JAGS model specification.
 #'
@@ -27,9 +27,9 @@
 #' The model estimates:
 #' \itemize{
 #'   \item Mediator effects \code{a[j, p]} and outcome effects \code{b[j]}
-#'   \item Inclusion indicators \code{ind.a[j]}, \code{ind.b[j]}, and \code{ind.joint[j]}
-#'   \item Direct effect of predictors \code{c.prime[p]}
-#'   \item Residual precisions and hyperparameters (\code{prec.m[j]}, \code{prec.y}, \code{taua}, \code{taub}, \code{ind.p})
+#'   \item Inclusion indicators \code{a.pip[j]}, \code{b.pip[j]}, and \code{ind.joint[j]}
+#'   \item Direct effect of predictors \code{direct.coef[p]}
+#'   \item Residual precisions and hyperparameters (\code{m.prec[j]}, \code{y.prec}, \code{a.coef.hyperprec}, \code{b.coef.hyperprec}, \code{ind.p})
 #' }
 #'
 #' @seealso \code{\link{prepare_ebmed_data}}, \code{\link{run_ebmed}},
@@ -38,18 +38,21 @@
 #' @keywords internal
 #' @noRd
 build_ebmed_model_mcat_ycat <- function(P, K,
-                                        shape_a, rate_a,
-                                        shape_b, rate_b,
-                                        alpha_ind, beta_ind,
-                                        tau_cprime) {
+                                        a.prec_shape, a.prec_rate,
+                                        b.prec_shape, b.prec_rate,
+                                        a.pip.hyperalpha, a.pip.hyperbeta,
+                                        c.prime_precision) {
   # Set defaults for NULLs
-  if (is.null(shape_a)) shape_a <- 1
-  if (is.null(rate_a)) rate_a <- 0.001
-  if (is.null(shape_b)) shape_b <- 1
-  if (is.null(rate_b)) rate_b <- 0.001
-  if (is.null(alpha_ind)) alpha_ind <- 3
-  if (is.null(beta_ind)) beta_ind <- 3
-  if (is.null(tau_cprime)) tau_cprime <- 1.0E-6
+  if (is.null(a.prec_shape)) a.prec_shape <- 1
+  if (is.null(a.prec_rate)) a.prec_rate <- 0.001
+
+  if (is.null(b.prec_shape)) b.prec_shape <- 1
+  if (is.null(b.prec_rate)) b.prec_rate <- 0.001
+
+  if (is.null(a.pip.hyperalpha)) a.pip.hyperalpha <- 3
+  if (is.null(a.pip.hyperbeta)) a.pip.hyperbeta <- 3
+
+  if (is.null(c.prime_precision)) c.prime_precision <- 1.0E-6
 
   # Generate dynamic mediator loops and outcome string
   a_effect_string <- ""
@@ -77,37 +80,37 @@ model {
   }
 
   for (j in 1:", K, ") {
-    ind.a[j] ~ dbern(ind.p)
+    a.pip[j] ~ dbern(ind.p)
     for (p in 1:", P, ") {
-      a[j, p] <- ind.a[j] * aI[j, p]
-      aI[j, p] ~ dnorm(0, taua)
+      a[j, p] <- a.pip[j] * a.coef[j, p]
+      a.coef[j, p] ~ dnorm(0, ", a.prec_shape / a.prec_rate, ")
     }
   }
 
   ## b effects (Mediators -> Binary Outcome y)
   for (i in 1:N) {
     y[i] ~ dbern(prob.y[i])
-    logit(prob.y[i]) <- inprod(X[i, ], c.prime[])", b_effect_string, "
+    logit(prob.y[i]) <- inprod(X[i, ], direct.coef[])", b_effect_string, "
   }
 
   for (j in 1:", K, ") {
-    ind.b[j] ~ dbern(ind.p)
-    b[j] <- ind.b[j] * bI[j]
-    bI[j] ~ dnorm(0, taub)
+    b.pip[j] ~ dbern(ind.p)
+    b[j] <- b.pip[j] * b.coef[j]
+    b.coef[j] ~ dnorm(0, ", b.prec_shape / b.prec_rate, ")
   }
 
   ## Direct effects for predictors
   for (p in 1:", P, ") {
-    c.prime[p] ~ dnorm(0, ", tau_cprime, ")
+   direct.coef[p] ~ dnorm(0, ", c.prime_precision, ")
   }
 
   ## Hyperparameters
-  taua  ~ dgamma(", shape_a, ", ", rate_a, ")
-  taub  ~ dgamma(", shape_b, ", ", rate_b, ")
-  ind.p ~ dbeta(", alpha_ind, ", ", beta_ind, ")
+  a.coef.hyperprec   ~ dgamma(", a.prec_shape, ", ", a.prec_rate, ")
+  b.coef.hyperprec   ~ dgamma(", b.prec_shape, ", ", b.prec_rate, ")
+  ind.p  ~ dbeta(", a.pip.hyperalpha, ", ", a.pip.hyperbeta, ")
 
   ## Joint inclusion indicators
-  ind.joint <- ind.a * ind.b
+  ind.joint <- a.pip * b.pip
 }
 ")
 

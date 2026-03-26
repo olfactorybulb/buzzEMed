@@ -1,9 +1,7 @@
-#' Auto detecting variable types and selecting mediation effects (Automatic dispatcher)
+#' Fit an exploratory Bayesian mediation model.
 #'
-#' This function automatically detects the data types of the outcome variables and dispatches
-#' to the appropriate buzzMed model implementation.
-#'
-#' The function prepares the data, constructs the corresponding JAGS model,
+#' Fits an explanatory Bayesian mediation model with binary mediators and binary
+#' dependent variables. The function prepares the data, constructs the JAGS model,
 #' runs MCMC sampling, and returns posterior samples.
 #'
 #' @param dataset A \code{data.frame} containing the outcome, predictors, and mediators.
@@ -23,22 +21,6 @@
 #'     \item \code{"T"}: allow users to manually specify prior distributions,
 #'     \item \code{"I"}: launch an interactive prompt to guide prior selection.
 #'   }
-#'
-#' @param m.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for mediator residual precisions.
-#'   Default is 1.
-#'
-#' @param m.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for mediator residual precisions.
-#'   Default is 0.001.
-#'
-#' @param y.prec_shape Numeric scalar.
-#'   Shape parameter of the Gamma hyperprior for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param y.prec_rate Numeric scalar.
-#'   Rate parameter of the Gamma hyperprior for the outcome residual precision.
-#'   Default is 1.
 #'
 #' @param a.coef.prec_shape Numeric scalar or vector of length equal to \code{M}.
 #'   Shape parameter of the Gamma hyperprior for the \eqn{a} path coefficient precisions.
@@ -180,13 +162,11 @@
 #' @export
 
 
-buzzEBMedAuto <- function(
+buzzMcatYcat <- function(
     dataset,
     X,
     M,
     Y,
-    m.prec_shape = NULL, m.prec_rate = NULL,
-    y.prec_shape = NULL, y.prec_rate = NULL,
     a.prec_shape = NULL, a.prec_rate = NULL,
     b.prec_shape = NULL, b.prec_rate = NULL,
     a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
@@ -204,46 +184,46 @@ buzzEBMedAuto <- function(
     chains = NULL,
     coda = NULL
 ) {
-  # 1. Capture all possible inputs (from header and the dots)
-  # This creates a master list of everything the user provided
-  all_params <- c(as.list(environment()))
 
   ## number of mediators
-  K <- length(M)
   P <- length(X)
+  K <- length(M)
 
-  if (length(unique(dataset[[M[1]]]))<=2) {
-    cat("Treating M as binary.\n")
-    M_cont <- FALSE
-  } else {
-    cat("Treating M as continuous.\n")
-    M_cont <- TRUE
-    }
-  if (length(unique(dataset[[Y]]))<=2) {
-    cat("Treating Y as binary.\n")
-    Y_cont <- FALSE
-  } else {
-    cat("Treating Y as continuous.\n")
-    Y_cont <- TRUE
-  }
+  Y_cont <- FALSE
+  M_cont <- FALSE
 
-  # Select the target function based on types
-  target_fun <- if (M_cont && Y_cont) {
-    "buzzMcontYcont"
-  } else if (!M_cont && Y_cont) {
-    "buzzMcatYcont"
-  } else if (M_cont && !Y_cont){
-    "buzzMcontYcat"
-  } else{
-    "buzzMcatYcat"
-  }
+  ## 1. prepare data
+  bdata <- prepare_ebmed_data(dataset, X, M, Y, M_cont, Y_cont)
 
-  # 3. THE SMART FILTER: Only keep arguments that exist in the target function
-  valid_args <- names(formals(target_fun))
+  ## 2. build model
+  modelstring <- build_ebmed_model_mcat_ycat(P, K,
+                                             a.prec_shape = a.prec_shape, a.prec_rate = a.prec_rate,
+                                             b.prec_shape = b.prec_shape, b.prec_rate = b.prec_rate,
+                                             a.pip.hyperalpha = a.pip.hyperalpha, a.pip.hyperbeta = a.pip.hyperbeta,
+                                             c.prime_precision = c.prime_precision)
 
-  # Filter the master list down to only what the target function wants
-  filtered_params <- all_params[names(all_params) %in% valid_args]
+  ## 3. initial values
+  init <- define_init_values(P,K,
+                             M_cont,
+                             Y_cont,
+                             m.prec.init = m.prec.init,
+                             y.prec.init = y.prec.init,
+                             c.prime.init = c.prime.init,
+                             taua.init = taua.init,
+                             taub.init = taub.init,
+                             a.pip.init = a.pip.init,
+                             b.pip.init = b.pip.init)
 
-  # 4. Execute
-  return(do.call(target_fun, filtered_params))
+  ## 4. run JAGS
+  output <- run_ebmed_jags(
+    modelstring = modelstring,
+    bdata = bdata,
+    init = init,
+    M_cont, Y_cont,
+    n_burnin = n_burnin,
+    n_iter = n_iter,
+    thin = thin
+  )
+
+  return(output)
 }

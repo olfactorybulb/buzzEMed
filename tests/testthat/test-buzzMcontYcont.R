@@ -1,14 +1,14 @@
-test_that("buzzMcat returns an mcmc.list object", {
+test_that("buzzMcontYcont returns an mcmc.list object", {
   # 1. Create minimal test data
   set.seed(2026)
   test_dataset <- data.frame(
     outcome = rnorm(20),
     predictor = rnorm(20),
-    mediator1 = rbinom(20, 1, 0.5)
+    mediator1 = rnorm(20)
   )
 
   # 2. Run the function with minimal iterations
-  res <- buzzMcat(
+  res <- buzzMcontYcont(
     dataset = test_dataset,
     X = "predictor",
     Y = "outcome",
