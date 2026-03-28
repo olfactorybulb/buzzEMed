@@ -1,165 +1,71 @@
-#' Fit an exploratory Bayesian mediation model.
+#' Fit a Bayesian Mediation Model (Continuous M & Y)
 #'
-#' Fits an explanatory Bayesian mediation model with continuous mediators and
-#' continuous dependent variables. The function prepares the data, constructs
-#' the JAGS model, runs MCMC sampling, and returns posterior samples.
+#' Fits a Bayesian mediation model specifically designed for continuous mediators
+#' and continuous outcome variables. It automates data preparation, JAGS model
+#' construction, and MCMC sampling.
 #'
 #' @param dataset A \code{data.frame} containing the outcome, predictors, and mediators.
+#' @param X A character vector specifying the name(s) of the predictor variable(s).
+#' @param M A character vector specifying the name(s) of the mediator variable(s).
+#' @param Y A character string specifying the name of the outcome variable.
+#' @param prior_spec Optional \code{data.frame} containing custom prior specifications.
+#' @param advanced Character. Use \code{"I"} for interactive wizard, or leave \code{NULL} for default.
 #'
-#' @param X A character string or character vector specifying the name(s) of the
-#'   predictor variable(s) in \code{dataset}.
+#' @param m.prec.shape,m.prec.rate Shape and rate for mediator residual precisions (Gamma).
+#' @param y.prec.shape,y.prec.rate Shape and rate for outcome residual precision (Gamma).
+#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Shape and rate for \eqn{a} path hyperprecisions.
+#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Shape and rate for \eqn{b} path hyperprecisions.
+#' @param a.pip.hyperalpha,a.pip.hyperbeta Alpha and beta for \eqn{a} path inclusion probabilities (Beta).
+#' @param b.pip.hyperalpha,b.pip.hyperbeta Alpha and beta for \eqn{b} path inclusion probabilities (Beta).
+#' @param direct.coef.mean,direct.coef.precision Mean and precision for direct effects (\eqn{c'}).
 #'
-#' @param M A character vector specifying the name(s) of the mediator variable(s)
-#'   in \code{dataset}.
+#' @param m.prec.init,y.prec.init,direct.coef.init Initial values for precisions and direct effects.
+#' @param a.coef.hyperprec.init,b.coef.hyperprec.init Initial values for coefficient hyperprecisions.
+#' @param a.pip.hyperprior.init,b.pip.hyperprior.init Initial values for inclusion probabilities.
 #'
-#' @param Y A character string specifying the name of the outcome variable in
-#'   \code{dataset}.
+#' @param n_chains Integer. Number of MCMC chains (default usually handled in \code{run_ebmed_jags}).
+#' @param n_adapt Integer. Number of adaptation iterations.
+#' @param n_burnin Integer. Number of burn-in iterations.
+#' @param n_iter Integer. Number of post-burn-in iterations.
+#' @param thin Integer. Thinning interval.
 #'
-#' @param advanced Character. One of \code{"N"}, \code{"T"}, or \code{"I"}:
-#'   \itemize{
-#'     \item \code{"N"}: use default prior distributions,
-#'     \item \code{"T"}: allow users to manually specify prior distributions,
-#'     \item \code{"I"}: launch an interactive prompt to guide prior selection.
-#'   }
-#'
-#' @param m.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for mediator residual precisions.
-#'   Default is 1.
-#'
-#' @param m.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for mediator residual precisions.
-#'   Default is 0.001.
-#'
-#' @param y.prec_shape Numeric scalar.
-#'   Shape parameter of the Gamma hyperprior for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param y.prec_rate Numeric scalar.
-#'   Rate parameter of the Gamma hyperprior for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param a.coef.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for the \eqn{a} path coefficient precisions.
-#'   Default is 1.
-#'
-#' @param a.coef.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for the \eqn{a} path coefficient precisions.
-#'   Default is 0.001.
-#'
-#' @param b.coef.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for the \eqn{b} path coefficient precisions.
-#'   Default is 1.
-#'
-#' @param b.coef.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for the \eqn{b} path coefficient precisions.
-#'   Default is 0.001.
-#'
-#' @param a.pip.hyperalpha Numeric.
-#'   Alpha parameter of the Beta prior for mediator inclusion probabilities (a paths).
-#'   Default is 3.
-#'
-#' @param a.pip.hyperbeta Numeric.
-#'   Beta parameter of the Beta prior for mediator inclusion probabilities (a paths).
-#'   Default is 3.
-#'
-#' @param b.pip.hyperalpha Numeric.
-#'   Alpha parameter of the Beta prior for mediator inclusion probabilities (b paths).
-#'   Default is 3.
-#'
-#' @param b.pip.hyperbeta Numeric.
-#'   Beta parameter of the Beta prior for mediator inclusion probabilities (b paths).
-#'   Default is 3.
-#'
-#' @param c.prime_mean Numeric.
-#'   Mean of the normal prior for the direct effects (\code{c.prime}).
-#'   Default is 0.
-#'
-#' @param c.prime_precision Numeric.
-#'   Precision of the normal prior for the direct effects (\code{c.prime}).
-#'   Default is \code{1.0E-6}.
-#'
-#' @param m.prec.init Numeric.
-#'   Initial values for mediator residual precisions.
-#'   Default is 1.
-#'
-#' @param y.prec.init Numeric.
-#'   Initial value for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param c.prime.init Numeric.
-#'   Initial values for the direct effects (\code{X -> Y}).
-#'   Default is 0.
-#'
-#' @param taua.init Numeric.
-#'   Initial value for the slab precision of the \eqn{a} paths.
-#'   Default is 1.
-#'
-#' @param taub.init Numeric.
-#'   Initial value for the slab precision of the \eqn{b} paths.
-#'   Default is 1.
-#'
-#' @param a.pip.init Numeric in (0, 1).
-#'   Initial value for mediator inclusion probabilities (a paths).
-#'   Default is 0.5.
-#'
-#' @param b.pip.init Numeric in (0, 1).
-#'   Initial value for mediator inclusion probabilities (b paths).
-#'   Default is 0.5.
-#'
-#' @param n_burnin Integer.
-#'   Number of burn-in iterations for the MCMC sampler.
-#'   Default is 1000.
-#'
-#' @param n_iter Integer.
-#'   Number of post–burn-in MCMC iterations.
-#'   Default is 10000.
-#'
-#' @param thin Integer.
-#'   Thinning interval for MCMC samples.
-#'   Default is 1 (no thinning).
-#'
-#' @param chains Integer.
-#'   Number of MCMC chains to run.
-#'
-#' @param coda Logical.
-#'   If \code{TRUE}, return results as a \code{coda} object.
-#'
-#' @return
-#' An object of class \code{mcmc.list} containing posterior samples from JAGS.
+#' @return An object of class \code{mcmc.list} containing posterior samples.
 #'
 #' @details
-#' This function serves as a wrapper and automatic dispatcher. Based on whether
-#' the mediator(s) and outcome are continuous or binary, it calls one of:
-#' \code{buzzMcontYcont}, \code{buzzMcatYcont},
-#' \code{buzzMcontYcat}, or \code{buzzMcatYcat}.
+#' This function is one of the four specific "worker" functions in the \code{buzzMed}
+#' package. It relies on \code{make_parms_main} to resolve priorities between
+#' individual arguments, data frames, and interactive input.
 #'
 #' Internally, this function relies on \code{prepare_ebmed_data()},
 #' \code{build_ebmed_model()}, \code{define_init_values()},
 #' and \code{run_ebmed_jags()}.
 #'
 #' @examples
-#' # 1. Create a small data set for testing (both Y and M are binary)
+#' # 1. Create a small continuous data set for testing
 #' set.seed(123)
+#' n <- 100
 #' toy_data <- data.frame(
-#'   outcome = rbinom(50, 1, 0.5),
-#'   predictor = rbinom(50, 1, 0.5),
-#'   mediator1 = rbinom(50, 1, 0.5),
-#'   mediator2 = rbinom(50, 1, 0.5)
+#'   predictor = rnorm(n),
+#'   mediator1 = rnorm(n),
+#'   mediator2 = rnorm(n),
+#'   outcome   = rnorm(n)
 #' )
 #'
 #' # 2. Run a quick model with just a few iterations
-#' results <- buzzEBMedAuto(
-#'   dataset = toy_data,
-#'   X = "predictor",
-#'   Y = "outcome",
-#'   M = c("mediator1", "mediator2"),
-#'   n_burnin = 10,
-#'   n_iter = 50
+#' # Note: In a real analysis, n_burnin and n_iter should be much higher
+#' results <- buzzMcontYcont(
+#'   dataset  = toy_data,
+#'   X        = "predictor",
+#'   M        = c("mediator1", "mediator2"),
+#'   Y        = "outcome",
+#'   n_burnin = 100,
+#'   n_iter   = 500,
+#'   n_chains = 2
 #' )
 #'
 #' \dontrun{
 #' # With more realistic MCMC settings you will want to run more iterations
-#' results_full <- buzzEBMedAuto(
+#' results_full <- buzzMcontYcont(
 #'   dataset = your_real_data,
 #'   X = "exposure",
 #'   Y = "disease",
@@ -168,6 +74,8 @@
 #'   n_iter = 10000
 #' )
 #' }
+#'
+#' @family buzzMed_fitters
 #'
 #' @references
 #' Dingjing Shi, Dexin Shi, & Amanda J. Fairchild (2023).
@@ -183,24 +91,26 @@ buzzMcontYcont <- function(
     X,
     M,
     Y,
-    m.prec_shape = NULL, m.prec_rate = NULL,
-    y.prec_shape = NULL, y.prec_rate = NULL,
-    a.prec_shape = NULL, a.prec_rate = NULL,
-    b.prec_shape = NULL, b.prec_rate = NULL,
+    prior_spec = NULL, advanced = NULL,
+    m.prec.shape = NULL, m.prec.rate = NULL,
+    y.prec.shape = NULL, y.prec.rate = NULL,
+    a.coef.hyperprec.shape = NULL, a.coef.hyperprec.rate = NULL,
+    b.coef.hyperprec.shape = NULL, b.coef.hyperprec.rate = NULL,
     a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
     b.pip.hyperalpha = NULL, b.pip.hyperbeta = NULL,
-    c.prime_mean = NULL, c.prime_precision = NULL,
+    direct.coef.mean = NULL, direct.coef.precision = NULL,
     m.prec.init = NULL,
     y.prec.init = NULL,
-    c.prime.init = NULL,
-    taua.init = NULL,
-    taub.init = NULL,
-    a.pip.init = NULL, b.pip.init = NULL,
+    direct.coef.init = NULL,
+    a.coef.hyperprec.init = NULL,
+    b.coef.hyperprec.init = NULL,
+    a.pip.hyperprior.init = NULL,
+    b.pip.hyperprior.init = NULL,
+    n_chains = NULL,
+    n_adapt = NULL,
     n_burnin = NULL,
     n_iter = NULL,
-    thin = NULL,
-    chains = NULL,
-    coda = NULL
+    thin = NULL
 ){
 
   ## number of mediators
@@ -210,18 +120,30 @@ buzzMcontYcont <- function(
   Y_cont <- TRUE
   M_cont <- TRUE
 
-  ## 1. prepare data
+  ## 1. prepare data and set up the prior data frame
   bdata <- prepare_ebmed_data(dataset, X, M, Y, M_cont, Y_cont)
 
-  ## 2. build model
-  modelstring <- build_ebmed_model_mcont_ycont(P, K,
-                                               m.prec_shape = m.prec_shape, m.prec_rate = m.prec_rate,
-                                               y.prec_shape = y.prec_shape, y.prec_rate = y.prec_rate,
-                                               a.prec_shape = a.prec_shape, a.prec_rate = a.prec_rate,
-                                               b.prec_shape = b.prec_shape, b.prec_rate = b.prec_rate,
-                                               a.pip.hyperalpha = a.pip.hyperalpha, a.pip.hyperbeta = a.pip.hyperbeta,
-                                               c.prime_precision = c.prime_precision)
+  parms <- make_parms_main(
+    m.prec.shape = m.prec.shape,
+    m.prec.rate  = m.prec.rate,
+    y.prec.shape = y.prec.shape,
+    y.prec.rate  = y.prec.rate,
+    a.coef.hyperprec.shape = a.coef.hyperprec.shape,
+    a.coef.hyperprec.rate  = a.coef.hyperprec.rate,
+    b.coef.hyperprec.shape = b.coef.hyperprec.shape,
+    b.coef.hyperprec.rate  = b.coef.hyperprec.rate,
+    a.pip.hyperalpha = a.pip.hyperalpha,
+    a.pip.hyperbeta  = a.pip.hyperbeta,
+    b.pip.hyperalpha = b.pip.hyperalpha,
+    b.pip.hyperbeta  = b.pip.hyperbeta,
+    direct.coef.mean = direct.coef.mean,
+    direct.coef.precision = direct.coef.precision,
+    prior_spec  = prior_spec,
+    advanced = advanced
+    )
 
+  ## 2. build model
+  modelstring <- build_ebmed_model_mcont_ycont(P, K, parms)
 
   ## 3. initial values
   init <- define_init_values(P,
@@ -230,22 +152,23 @@ buzzMcontYcont <- function(
                              Y_cont,
                              m.prec.init = m.prec.init,
                              y.prec.init = y.prec.init,
-                             c.prime.init = c.prime.init,
-                             taua.init = taua.init,
-                             taub.init = taub.init,
-                             a.pip.init = a.pip.init,
-                             b.pip.init = b.pip.init)
+                             direct.coef.init = direct.coef.init,
+                             a.coef.hyperprec.init = a.coef.hyperprec.init,
+                             b.coef.hyperprec.init = b.coef.hyperprec.init,
+                             a.pip.hyperprior.init = a.pip.hyperprior.init,
+                             b.pip.hyperprior.init = b.pip.hyperprior.init)
 
   ## 4. run JAGS
-  output <- run_ebmed_jags(
-    modelstring = modelstring,
-    bdata = bdata,
-    init = init,
-    M_cont, Y_cont,
-    n_burnin = n_burnin,
-    n_iter = n_iter,
-    thin = thin
-  )
+  output <- run_ebmed_jags(modelstring = modelstring,
+                           bdata = bdata,
+                           init = init,
+                           M_cont = M_cont,
+                           Y_cont = Y_cont,
+                           n_chains = n_chains,
+                           n_adapt = n_adapt,
+                           n_burnin = n_burnin,
+                           n_iter = n_iter,
+                           thin = thin)
 
   return(output)
 }

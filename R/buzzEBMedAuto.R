@@ -7,127 +7,31 @@
 #' runs MCMC sampling, and returns posterior samples.
 #'
 #' @param dataset A \code{data.frame} containing the outcome, predictors, and mediators.
+#' @param X A character vector specifying the name(s) of the predictor variable(s).
+#' @param M A character vector specifying the name(s) of the mediator variable(s).
+#' @param Y A character string specifying the name of the outcome variable.
+#' @param prior_spec Optional \code{data.frame} containing custom prior specifications.
+#' @param advanced Character. Use \code{"I"} for interactive wizard, or leave \code{NULL} for default.
 #'
-#' @param X A character string or character vector specifying the name(s) of the
-#'   predictor variable(s) in \code{dataset}.
+#' @param m.prec.shape,m.prec.rate Shape and rate for mediator residual precisions (Gamma).
+#' @param y.prec.shape,y.prec.rate Shape and rate for outcome residual precision (Gamma).
+#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Shape and rate for \eqn{a} path hyperprecisions.
+#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Shape and rate for \eqn{b} path hyperprecisions.
+#' @param a.pip.hyperalpha,a.pip.hyperbeta Alpha and beta for \eqn{a} path inclusion probabilities (Beta).
+#' @param b.pip.hyperalpha,b.pip.hyperbeta Alpha and beta for \eqn{b} path inclusion probabilities (Beta).
+#' @param direct.coef.mean,direct.coef.precision Mean and precision for direct effects (\eqn{c'}).
 #'
-#' @param M A character vector specifying the name(s) of the mediator variable(s)
-#'   in \code{dataset}.
+#' @param m.prec.init,y.prec.init,direct.coef.init Initial values for precisions and direct effects.
+#' @param a.coef.hyperprec.init,b.coef.hyperprec.init Initial values for coefficient hyperprecisions.
+#' @param a.pip.hyperprior.init,b.pip.hyperprior.init Initial values for inclusion probabilities.
 #'
-#' @param Y A character string specifying the name of the outcome variable in
-#'   \code{dataset}.
+#' @param n_chains Integer. Number of MCMC chains (default usually handled in \code{run_ebmed_jags}).
+#' @param n_adapt Integer. Number of adaptation iterations.
+#' @param n_burnin Integer. Number of burn-in iterations.
+#' @param n_iter Integer. Number of post-burn-in iterations.
+#' @param thin Integer. Thinning interval.
 #'
-#' @param advanced Character. One of \code{"N"}, \code{"T"}, or \code{"I"}:
-#'   \itemize{
-#'     \item \code{"N"}: use default prior distributions,
-#'     \item \code{"T"}: allow users to manually specify prior distributions,
-#'     \item \code{"I"}: launch an interactive prompt to guide prior selection.
-#'   }
-#'
-#' @param m.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for mediator residual precisions.
-#'   Default is 1.
-#'
-#' @param m.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for mediator residual precisions.
-#'   Default is 0.001.
-#'
-#' @param y.prec_shape Numeric scalar.
-#'   Shape parameter of the Gamma hyperprior for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param y.prec_rate Numeric scalar.
-#'   Rate parameter of the Gamma hyperprior for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param a.coef.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for the \eqn{a} path coefficient precisions.
-#'   Default is 1.
-#'
-#' @param a.coef.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for the \eqn{a} path coefficient precisions.
-#'   Default is 0.001.
-#'
-#' @param b.coef.prec_shape Numeric scalar or vector of length equal to \code{M}.
-#'   Shape parameter of the Gamma hyperprior for the \eqn{b} path coefficient precisions.
-#'   Default is 1.
-#'
-#' @param b.coef.prec_rate Numeric scalar or vector of length equal to \code{M}.
-#'   Rate parameter of the Gamma hyperprior for the \eqn{b} path coefficient precisions.
-#'   Default is 0.001.
-#'
-#' @param a.pip.hyperalpha Numeric.
-#'   Alpha parameter of the Beta prior for mediator inclusion probabilities (a paths).
-#'   Default is 3.
-#'
-#' @param a.pip.hyperbeta Numeric.
-#'   Beta parameter of the Beta prior for mediator inclusion probabilities (a paths).
-#'   Default is 3.
-#'
-#' @param b.pip.hyperalpha Numeric.
-#'   Alpha parameter of the Beta prior for mediator inclusion probabilities (b paths).
-#'   Default is 3.
-#'
-#' @param b.pip.hyperbeta Numeric.
-#'   Beta parameter of the Beta prior for mediator inclusion probabilities (b paths).
-#'   Default is 3.
-#'
-#' @param c.prime_mean Numeric.
-#'   Mean of the normal prior for the direct effects (\code{c.prime}).
-#'   Default is 0.
-#'
-#' @param c.prime_precision Numeric.
-#'   Precision of the normal prior for the direct effects (\code{c.prime}).
-#'   Default is \code{1.0E-6}.
-#'
-#' @param m.prec.init Numeric.
-#'   Initial values for mediator residual precisions.
-#'   Default is 1.
-#'
-#' @param y.prec.init Numeric.
-#'   Initial value for the outcome residual precision.
-#'   Default is 1.
-#'
-#' @param c.prime.init Numeric.
-#'   Initial values for the direct effects (\code{X -> Y}).
-#'   Default is 0.
-#'
-#' @param taua.init Numeric.
-#'   Initial value for the slab precision of the \eqn{a} paths.
-#'   Default is 1.
-#'
-#' @param taub.init Numeric.
-#'   Initial value for the slab precision of the \eqn{b} paths.
-#'   Default is 1.
-#'
-#' @param a.pip.init Numeric in (0, 1).
-#'   Initial value for mediator inclusion probabilities (a paths).
-#'   Default is 0.5.
-#'
-#' @param b.pip.init Numeric in (0, 1).
-#'   Initial value for mediator inclusion probabilities (b paths).
-#'   Default is 0.5.
-#'
-#' @param n_burnin Integer.
-#'   Number of burn-in iterations for the MCMC sampler.
-#'   Default is 1000.
-#'
-#' @param n_iter Integer.
-#'   Number of post–burn-in MCMC iterations.
-#'   Default is 10000.
-#'
-#' @param thin Integer.
-#'   Thinning interval for MCMC samples.
-#'   Default is 1 (no thinning).
-#'
-#' @param chains Integer.
-#'   Number of MCMC chains to run.
-#'
-#' @param coda Logical.
-#'   If \code{TRUE}, return results as a \code{coda} object.
-#'
-#' @return
-#' An object of class \code{mcmc.list} containing posterior samples from JAGS.
+#' @return An object of class \code{mcmc.list} containing posterior samples.
 #'
 #' @details
 #' This function serves as a wrapper and automatic dispatcher. Based on whether
@@ -185,25 +89,27 @@ buzzEBMedAuto <- function(
     X,
     M,
     Y,
-    m.prec_shape = NULL, m.prec_rate = NULL,
-    y.prec_shape = NULL, y.prec_rate = NULL,
-    a.prec_shape = NULL, a.prec_rate = NULL,
-    b.prec_shape = NULL, b.prec_rate = NULL,
+    prior_spec = NULL, advanced = NULL,
+    m.prec.shape = NULL, m.prec.rate = NULL,
+    y.prec.shape = NULL, y.prec.rate = NULL,
+    a.coef.hyperprec.shape = NULL, a.coef.hyperprec.rate = NULL,
+    b.coef.hyperprec.shape = NULL, b.coef.hyperprec.rate = NULL,
     a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
     b.pip.hyperalpha = NULL, b.pip.hyperbeta = NULL,
-    c.prime_mean = NULL, c.prime_precision = NULL,
+    direct.coef.mean = NULL, direct.coef.precision = NULL,
     m.prec.init = NULL,
     y.prec.init = NULL,
-    c.prime.init = NULL,
-    taua.init = NULL,
-    taub.init = NULL,
-    a.pip.init = NULL, b.pip.init = NULL,
+    direct.coef.init = NULL,
+    a.coef.hyperprec.init = NULL,
+    b.coef.hyperprec.init = NULL,
+    a.pip.hyperprior.init = NULL,
+    b.pip.hyperprior.init = NULL,
+    n_chains = NULL,
+    n_adapt = NULL,
     n_burnin = NULL,
     n_iter = NULL,
-    thin = NULL,
-    chains = NULL,
-    coda = NULL
-) {
+    thin = NULL
+){
   # 1. Capture all possible inputs (from header and the dots)
   # This creates a master list of everything the user provided
   all_params <- c(as.list(environment()))

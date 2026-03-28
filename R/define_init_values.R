@@ -24,12 +24,12 @@
 #' @param y.prec.init Numeric or \code{NULL}. Initial precision (inverse variance)
 #'   of the outcome variable \code{Y} when \code{Y_cont = TRUE}. If \code{NULL},
 #'   a default value of 1 is used internally.
-#' @param c.prime.init Numeric or \code{NULL}. Initial value for the direct effect
+#' @param direct.coef.init Numeric or \code{NULL}. Initial value for the direct effect
 #'   (\code{X -> Y}). If \code{NULL}, a default value is used internally.
-#' @param taua.init Numeric or \code{NULL}. Initial prior precision for the \code{a}
+#' @param a.coef.hyperprec.init Numeric or \code{NULL}. Initial prior precision for the \code{a}
 #'   path coefficients (\code{X -> M}). If \code{NULL}, a default value is used
 #'   internally.
-#' @param taub.init Numeric or \code{NULL}. Initial prior precision for the \code{b}
+#' @param b.coef.hyperprec.init Numeric or \code{NULL}. Initial prior precision for the \code{b}
 #'   path coefficients (\code{M -> Y}). If \code{NULL}, a default value is used
 #'   internally.
 #' @param ind.p Numeric in (0, 1) or \code{NULL}. Initial prior inclusion
@@ -52,11 +52,11 @@
 #'     \code{b} paths.}
 #'   \item{y.prec.init}{Numeric. Outcome precision (included only when
 #'     \code{Y_cont = TRUE}).}
-#'   \item{c.prime.init}{Numeric vector of length \code{P}. Direct effect coefficients.}
-#'   \item{taua.init}{Numeric. Prior precision for \code{a} paths.}
-#'   \item{taub.init}{Numeric. Prior precision for \code{b} paths.}
-#'   \item{a.pip.init}{Numeric. Prior inclusion probability for A effect.}
-#'   \item{b.pip.init}{Numeric. Prior inclusion probability for B effect.}
+#'   \item{direct.coef.init}{Numeric vector of length \code{P}. Direct effect coefficients.}
+#'   \item{a.coef.hyperprec.init}{Numeric. Prior precision for \code{a} paths.}
+#'   \item{b.coef.hyperprec.init}{Numeric. Prior precision for \code{b} paths.}
+#'   \item{a.pip.hyperprior.init}{Numeric. Prior inclusion probability for A effect.}
+#'   \item{b.pip.hyperprior.init}{Numeric. Prior inclusion probability for B effect.}
 #' }
 #'
 #' @seealso \code{\link{fit_ebmed}}
@@ -71,20 +71,20 @@ define_init_values <- function(
     Y_cont,
     m.prec.init,
     y.prec.init,
-    c.prime.init,
-    taua.init,
-    taub.init,
-    a.pip.init,
-    b.pip.init
+    direct.coef.init,
+    a.coef.hyperprec.init,
+    b.coef.hyperprec.init,
+    a.pip.hyperprior.init,
+    b.pip.hyperprior.init
 ) {
-  # Handling null cases explicitly and set values as default if NULL
-  if (is.null(m.prec.init)) m.prec.init <- 1
-  if (is.null(y.prec.init)) y.prec.init <- 1
-  if (is.null(c.prime.init)) c.prime.init <- 0
-  if (is.null(taua.init)) taua.init <- 1
-  if (is.null(taub.init)) taub.init <- 1
-  if (is.null(a.pip.init)) a.pip.init <- 0.5
-  if (is.null(b.pip.init)) b.pip.init <- 0.5
+  # Handling null cases explicitly and set values as default if NULL ('%||%' operator defined in util.R)
+    m.prec.init              <- m.prec.init              %||% 1
+    y.prec.init              <- y.prec.init              %||% 1
+    direct.coef.init         <- direct.coef.init         %||% 0
+    a.coef.hyperprec.init    <- a.coef.hyperprec.init    %||% 1
+    b.coef.hyperprec.init    <- b.coef.hyperprec.init    %||% 1
+    a.pip.hyperprior.init    <- a.pip.hyperprior.init    %||% 0.5
+    b.pip.hyperprior.init    <- b.pip.hyperprior.init    %||% 0.5
 
   #Actual Code
 
@@ -101,10 +101,11 @@ define_init_values <- function(
     if (Y_cont) list(y.prec = y.prec.init) else list(),
 
     list(
-      direct.coef = rep(c.prime.init, P),
-      a.coef.hyperprec = taua.init,
-      b.coef.hyperprec = taub.init,
-      ind.p = a.pip.init
+      direct.coef = rep(direct.coef.init, P),
+      a.coef.hyperprec = a.coef.hyperprec.init,
+      b.coef.hyperprec = b.coef.hyperprec.init,
+      a.pip.hyperprior = a.pip.hyperprior.init,
+      b.pip.hyperprior = b.pip.hyperprior.init
     )
   )
 }

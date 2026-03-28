@@ -25,16 +25,17 @@ run_ebmed_jags <- function(modelstring,
                            init,
                            M_cont,
                            Y_cont,
+                           n_chains,
+                           n_adapt,
                            n_burnin,
                            n_iter,
                            thin) {
-  # handle NULLs explicitly
-  if (is.null(n_burnin))
-    n_burnin <- 1000
-  if (is.null(n_iter))
-    n_iter <- 10000
-  if (is.null(thin))
-    thin <- 1
+  # handle NULLs explicitly ('%||%' operator defined in util.R)
+  n_chains <- n_chains %||% 1
+  n_adapt  <- n_adapt  %||% 1000
+  n_burnin <- n_burnin %||% 1000
+  n_iter   <- n_iter   %||% 10000
+  thin     <- thin     %||% 1
 
   if (Y_cont && M_cont) {
     vars <- c(
@@ -47,7 +48,8 @@ run_ebmed_jags <- function(modelstring,
       "y.prec",
       "a.coef.hyperprec",
       "b.coef.hyperprec",
-      "ind.p"
+      "a.pip.hyperprior",
+      "b.pip.hyperprior"
     )
   } else if (Y_cont && !M_cont) {
     vars <- c("ind.joint",
@@ -58,7 +60,8 @@ run_ebmed_jags <- function(modelstring,
               "y.prec",
               "a.coef.hyperprec",
               "b.coef.hyperprec",
-              "ind.p")
+              "a.pip.hyperprior",
+              "b.pip.hyperprior")
   } else if (!Y_cont && M_cont) {
     vars <- c("ind.joint",
               "m.prec",
@@ -68,7 +71,8 @@ run_ebmed_jags <- function(modelstring,
               "b.pip",
               "a.coef.hyperprec",
               "b.coef.hyperprec",
-              "ind.p")
+              "a.pip.hyperprior",
+              "b.pip.hyperprior")
   } else {
     vars <- c("ind.joint",
               "a.coef",
@@ -77,25 +81,25 @@ run_ebmed_jags <- function(modelstring,
               "b.pip",
               "a.coef.hyperprec",
               "b.coef.hyperprec",
-              "ind.p")
+              "a.pip.hyperprior",
+              "b.pip.hyperprior")
   }
 
 
   # Create JAGS model
   model <- jags.model(textConnection(modelstring),
                       data = bdata,
-                      inits = init)
-
+                      inits = init,
+                      n.chains = n_chains,
+                      n.adapt = n_adapt)
   # Burn-in
   update(model, n.iter = n_burnin)
 
   # Sample from posterior
-  output <- coda.samples(
-    model = model,
-    variable.names = vars,
-    n.iter = n_iter,
-    thin = thin
-  )
+  output <- coda.samples(model = model,
+                         variable.names = vars,
+                         n.iter = n_iter,
+                         thin = thin)
 
   return(output)
 }
