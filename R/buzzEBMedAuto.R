@@ -1,31 +1,61 @@
-#' Auto detecting variable types and selecting mediation effects (Automatic dispatcher)
+#' Automatic Bayesian Mediation Dispatcher
 #'
-#' This function automatically detects the data types of the outcome variables and dispatches
-#' to the appropriate buzzMed model implementation.
+#' Fits a Bayesian mediation model by automatically detecting data types and
+#' dispatching to the appropriate implementation based on a \code{lavaan}-style
+#' model syntax.
 #'
-#' The function prepares the data, constructs the corresponding JAGS model,
-#' runs MCMC sampling, and returns posterior samples.
+#' @description
+#' This function serves as the primary entry point for the \code{buzzEMed} package.
+#' It parses a model formula to identify predictors (\eqn{X}), mediators (\eqn{M}),
+#' and the outcome (\eqn{Y}), then routes the analysis to specialized
+#' functions based on whether variables are continuous or binary.
 #'
-#' @param dataset A \code{data.frame} containing the outcome, predictors, and mediators.
-#' @param X A character vector specifying the name(s) of the predictor variable(s).
-#' @param M A character vector specifying the name(s) of the mediator variable(s).
-#' @param Y A character string specifying the name of the outcome variable.
+#' @param model A description of the model to be fitted. This is typically a
+#' formula or a character string using \code{lavaan} syntax (e.g., \code{Y ~ M + X}).
+#' @param dataset A \code{data.frame} containing the variables specified in the model.
 #' @param prior_spec Optional \code{data.frame} containing custom prior specifications.
-#' @param advanced Character. Use \code{"I"} for interactive wizard, or leave \code{NULL} for default.
+#' Run \code{parms <- run_parms_wizard()} to see the required structure.
+#' @param advanced Character. Use \code{"interactive"} for an interactive wizard
+#' to choose parameter distributions, or leave \code{NULL} for defaults.
 #'
-#' @param m.prec.shape,m.prec.rate Shape and rate for mediator residual precisions (Gamma).
-#' @param y.prec.shape,y.prec.rate Shape and rate for outcome residual precision (Gamma).
-#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Shape and rate for \eqn{a} path hyperprecisions.
-#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Shape and rate for \eqn{b} path hyperprecisions.
-#' @param a.pip.hyperalpha,a.pip.hyperbeta Alpha and beta for \eqn{a} path inclusion probabilities (Beta).
-#' @param b.pip.hyperalpha,b.pip.hyperbeta Alpha and beta for \eqn{b} path inclusion probabilities (Beta).
-#' @param direct.coef.mean,direct.coef.precision Mean and precision for direct effects (\eqn{c'}).
+#' @section Model Syntax:
+#' The \code{model} argument accepts a standard R formula or a string.
+#' The dispatcher identifies:
+#' \itemize{
+#'   \item \strong{Outcome (Y)}: The dependent variable on the left-hand side of the main equation.
+#'   \item \strong{Mediators (M)}: Variables that appear as both predictors of Y and outcomes of X.
+#'   \item \strong{Predictors (X)}: Independent variables used to explain M and Y.
+#' }
 #'
-#' @param m.prec.init,y.prec.init,direct.coef.init Initial values for precisions and direct effects.
-#' @param a.coef.hyperprec.init,b.coef.hyperprec.init Initial values for coefficient hyperprecisions.
-#' @param a.pip.hyperprior.init,b.pip.hyperprior.init Initial values for inclusion probabilities.
+#' @section Hyperparameters (Manual Overrides):
+#' @param m.prec.shape,m.prec.rate Numeric scalar or vector of length equal to
+#' the number of mediators. Shape and rate parameters of the Gamma hyperprior
+#' for the mediator precisions. By default, a Gamma distribution is used.
+#' The default values are 1 and 0.001, respectively.
+#' @param y.prec.shape,y.prec.rate Numeric scalar. Shape and rate parameters
+#' of the Gamma hyperprior for the outcome precision. By default, a Gamma
+#' distribution is used. The default values are 1 and 0.001, respectively.
+#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Numeric scalar or vector.
+#' Shape and rate parameters of the Gamma hyperprior for the \eqn{a} path
+#' hyperprecisions. By default, a Gamma distribution is used. The default
+#' values are 1 and 0.001, respectively.
+#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Numeric scalar or vector.
+#' Shape and rate parameters of the Gamma hyperprior for the \eqn{b} path
+#' hyperprecisions. By default, a Gamma distribution is used. The default
+#' values are 1 and 0.001, respectively.
+#' @param a.pip.hyperalpha,a.pip.hyperbeta Numeric scalar or vector. Alpha and
+#' beta parameters for the Beta hyperprior of the \eqn{a} path inclusion
+#' probabilities. By default, a Beta distribution is used. The default value is 3.
+#' @param b.pip.hyperalpha,b.pip.hyperbeta Numeric scalar or vector. Alpha and
+#' beta parameters for the Beta hyperprior of the \eqn{b} path inclusion
+#' probabilities. By default, a Beta distribution is used. The default value is 3.
+#' @param direct.coef.mean,direct.coef.precision Numeric scalar or vector.
+#' Mean and precision parameters for the Normal prior of the direct effects
+#' (\eqn{c'}). By default, a Normal distribution is used. The default values
+#' are 0 and 1.0E-6, respectively.
 #'
-#' @param n_chains Integer. Number of MCMC chains (default usually handled in \code{run_ebmed_jags}).
+#' @section MCMC Settings:
+#' @param n_chains Integer. Number of MCMC chains.
 #' @param n_adapt Integer. Number of adaptation iterations.
 #' @param n_burnin Integer. Number of burn-in iterations.
 #' @param n_iter Integer. Number of post-burn-in iterations.
@@ -34,61 +64,23 @@
 #' @return An object of class \code{mcmc.list} containing posterior samples.
 #'
 #' @details
-#' This function serves as a wrapper and automatic dispatcher. Based on whether
-#' the mediator(s) and outcome are continuous or binary, it calls one of:
-#' \code{buzzMcontYcont}, \code{buzzMcatYcont},
-#' \code{buzzMcontYcat}, or \code{buzzMcatYcat}.
-#'
-#' Internally, this function relies on \code{prepare_ebmed_data()},
-#' \code{build_ebmed_model()}, \code{define_init_values()},
-#' and \code{run_ebmed_jags()}.
-#'
-#' @examples
-#' # 1. Create a small data set for testing (both Y and M are binary)
-#' set.seed(123)
-#' toy_data <- data.frame(
-#'   outcome = rbinom(50, 1, 0.5),
-#'   predictor = rbinom(50, 1, 0.5),
-#'   mediator1 = rbinom(50, 1, 0.5),
-#'   mediator2 = rbinom(50, 1, 0.5)
-#' )
-#'
-#' # 2. Run a quick model with just a few iterations
-#' results <- buzzEBMedAuto(
-#'   dataset = toy_data,
-#'   X = "predictor",
-#'   Y = "outcome",
-#'   M = c("mediator1", "mediator2"),
-#'   n_burnin = 10,
-#'   n_iter = 50
-#' )
-#'
-#' \dontrun{
-#' # With more realistic MCMC settings you will want to run more iterations
-#' results_full <- buzzEBMedAuto(
-#'   dataset = your_real_data,
-#'   X = "exposure",
-#'   Y = "disease",
-#'   M = c("biomarker1", "biomarker2"),
-#'   n_burnin = 1000,
-#'   n_iter = 10000
-#' )
+#' The function automatically treats variables with 2 or fewer unique values as
+#' binary. Based on the variable types identified in the \code{dataset}, it
+#' dispatches the model to one of the following worker functions:
+#' \itemize{
+#'   \item \code{\link{buzzEBMcontYcont}}
+#'   \item \code{\link{buzzEBMcatYcont}}
+#'   \item \code{\link{buzzEBMcontYcat}}
+#'   \item \code{\link{buzzEBMcatYcat}}
 #' }
 #'
-#' @references
-#' Dingjing Shi, Dexin Shi, & Amanda J. Fairchild (2023).
-#' Variable Selection for Mediators under a Bayesian Mediation Model.
-#' \emph{Structural Equation Modeling: A Multidisciplinary Journal}, 30(6), 887–900.
-#' \doi{10.1080/10705511.2022.2164285}#'
-#'
+#' @family buzzEMed_fitters
 #' @export
 
 
 buzzEBMedAuto <- function(
+    model,
     dataset,
-    X,
-    M,
-    Y,
     prior_spec = NULL, advanced = NULL,
     m.prec.shape = NULL, m.prec.rate = NULL,
     y.prec.shape = NULL, y.prec.rate = NULL,
@@ -114,6 +106,15 @@ buzzEBMedAuto <- function(
   # This creates a master list of everything the user provided
   all_params <- c(as.list(environment()))
 
+  # The parser returns the correct X, Y, M AND the correctly identified dataset
+  vars <- .parse_buzz_syntax(model, dataset)
+
+  # Update local variables for the rest of the function
+  X <- vars$X
+  Y <- vars$Y
+  M <- vars$M
+  dataset <- vars$dataset # Re-assign in case they were swapped
+
   ## number of mediators
   K <- length(M)
   P <- length(X)
@@ -135,13 +136,13 @@ buzzEBMedAuto <- function(
 
   # Select the target function based on types
   target_fun <- if (M_cont && Y_cont) {
-    "buzzMcontYcont"
+    "buzzEBMcontYcont"
   } else if (!M_cont && Y_cont) {
-    "buzzMcatYcont"
+    "buzzEBMcatYcont"
   } else if (M_cont && !Y_cont){
-    "buzzMcontYcat"
+    "buzzEBMcontYcat"
   } else{
-    "buzzMcatYcat"
+    "buzzEBMcatYcat"
   }
 
   # 3. THE SMART FILTER: Only keep arguments that exist in the target function

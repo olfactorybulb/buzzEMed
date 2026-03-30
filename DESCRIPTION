@@ -1,36 +1,36 @@
-Package: buzzMed
+Package: buzzEMed
 Version: 0.1.2
-Date: 2026-03-20
-Title: Bayesian Understanding of Mediation Selection in Exploratory
-    Mediation Analysis
+Date: 2026-03-29
+Title: Empirical Bayesian Mediation Analysis with Variable Selection
 Authors@R: c(
-    person("Dingjing", "Shi", "dshi32@gatech.edu", role = c("aut", "cre")),
+    person("Dingjing", "Shi", email = "dshi32@gatech.edu", role = c("aut", "cre")),
     person("Tansu", "Celikel", role = "aut"),
     person("Dexin", "Shi", role = "aut"),
-    person("Chih-Chia", "Hsing", "jesscc.hsing@gmail.com", role = "ctb")
-  )
-Description:
-    A tool for selecting mediating effects within exploratory Bayesian mediation
-    models. BuzzMed accommodates both continuous and dichotomous outcomes,
-    including the dependent variables and the mediators for identifying and
+    person("Chih-Chia", "Hsing", email = "jesscc.hsing@gmail.com", role = "ctb")
+    )
+Description: A collection of quantitative tools for selecting mediating
+    effects within exploratory Bayesian mediation models. The package
+    accommodates both continuous and dichotomous outcomes, including
+    the dependent variables and the mediators for identifying and
     analyzing mediation pathways.
-License: GPL (>= 3) + file LICENSE
-Imports: knitr, rjags, coda
-Suggests: spelling, testthat (>= 3.0.0)
+License: GPL (>= 3)
+Depends:
+    R (>= 4.0.0)
+Imports:
+    coda,
+    methods,
+    rjags,
+    stats,
+    utils
+Suggests:
+    knitr,
+    rmarkdown,
+    spelling,
+    testthat (>= 3.0.0)
 LazyData: yes
-ByteCompile: false
+ByteCompile: true
 VignetteBuilder: knitr
-URL: <https://github.com/olfactorybulb/buzzMed>
-BugReports: https://github.com/olfactorybulb/buzzMed/issues
-NeedsCompilation: yes
-Authors:
-    Dingjing Shi [aut,cre],
-    Tansu Celikel [aut,cre],
-    Dexin Shi [aut],
-    Chih-Chia Hsing [ctb]
-Maintainer: Chih-Chia Hsing <jesscc.hsing@gmail.com>
-Config/testthat/edition: 3
+URL: https://github.com/olfactorybulb/buzzEMed
+BugReports: https://github.com/olfactorybulb/buzzEMed/issues
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Repository: CRAN

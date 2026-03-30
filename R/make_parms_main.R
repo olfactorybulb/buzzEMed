@@ -1,60 +1,61 @@
 #' Internal Router for Parameter Dataframe Construction
 #'
 #' @description
-#' Determines the appropriate construction method for a parameters dataframe
-#' based on provided inputs. It follows a strict priority order to resolve
-#' conflicts when multiple input methods are used.
+#' This function is the central hub for resolving prior specifications. It
+#' determines which method of parameter construction to use based on user
+#' input, enforcing a strict hierarchy to handle overlapping arguments.
 #'
 #' @param m.prec.shape,m.prec.rate,y.prec.shape,y.prec.rate,a.coef.hyperprec.shape,a.coef.hyperprec.rate,b.coef.hyperprec.shape,b.coef.hyperprec.rate,a.pip.hyperalpha,a.pip.hyperbeta,b.pip.hyperalpha,b.pip.hyperbeta,direct.coef.mean,direct.coef.precision
-#'   Numeric. Individual prior parameters (Method 1).
+#' Numeric. Individual prior parameters (Method 1).
 #' @param prior_spec A data frame provided by the user (Method 2).
-#'   Must match the required parameter structure.
-#' @param advanced String. If set to \code{"interactive"}, triggers the
-#'   CLI wizard (Highest Priority).
+#' @param advanced Character string. If set to \code{"interactive"}, triggers
+#' the CLI wizard (Highest Priority).
 #'
 #' @details
-#' The function evaluates inputs in the following priority:
+#' The function evaluates inputs in the following **Priority Order**:
 #' \enumerate{
-#'   \item \strong{Interactive Wizard:} If \code{advanced = "interactive"},
-#'     the wizard runs. All other arguments are ignored with a warning.
-#'   \item \strong{User Dataframe:} If \code{prior_spec} is provided, it is
-#'     validated and returned. Named arguments are ignored with a warning.
-#'   \item \strong{Named Arguments:} If any individual parameters are
-#'     provided, they are compiled into a dataframe.
-#'   \item \strong{Defaults:} If no arguments are supplied, it returns
-#'     the system defaults via \code{.make_default_parms()}.
+#'   \item \strong{Interactive Wizard (Trigger: \code{advanced = "interactive"})}
+#'     \itemize{
+#'       \item Calls \code{\link{run_parms_wizard}}.
+#'       \item If the user completes the wizard, the result is passed to
+#'             \code{make_parms_from_df}.
+#'       \item If the user cancels, it falls back to system defaults.
+#'       \item \emph{Note:} All other arguments are ignored with a warning.
+#'     }
+#'   \item \strong{User Dataframe (Trigger: \code{prior_spec} is not NULL)}
+#'     \itemize{
+#'       \item Validates the user-provided dataframe.
+#'       \item Passes it to \code{make_parms_from_df}.
+#'       \item \emph{Note:} Individual named arguments are ignored with a warning.
+#'     }
+#'   \item \strong{Named Arguments (Trigger: any \code{Method 1} arg is not NULL)}
+#'     \itemize{
+#'       \item Compiles all individual arguments into a parameters dataframe.
+#'       \item Calls \code{make_parms_from_argument}.
+#'     }
+#'   \item \strong{System Defaults (Fallback)}
+#'     \itemize{
+#'       \item If no triggers are met, it silently returns
+#'             \code{\link{.make_default_parms}}.
+#'     }
 #' }
 #'
-#' @return A validated data frame of parameters ready for model use.
-#' @keywords internal
-
-# Internal function: routes user input to the correct parms-building method
-# and returns a validated parms dataframe.
-#
-# Priority order:
-#   1. advanced = "interactive"  → wizard → method 2 path
-#   2. prior_spec provided          → method 2 (named args ignored with warning)
-#   3. named args provided       → method 1
-#   4. nothing                   → defaults silently
+#' @return A validated \code{data.frame} of parameters (priors, distribution,
+#' arguments) ready for model use.
+#'
+#'
 make_parms_main <- function(
-    # method 1: named args
-  m.prec.shape = NULL, m.prec.rate = NULL,
-  y.prec.shape = NULL, y.prec.rate = NULL,
-  a.coef.hyperprec.shape = NULL, a.coef.hyperprec.rate = NULL,
-  b.coef.hyperprec.shape = NULL, b.coef.hyperprec.rate = NULL,
-  a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
-  b.pip.hyperalpha = NULL, b.pip.hyperbeta = NULL,
-  direct.coef.mean = NULL, direct.coef.precision = NULL,
-
-  # method 2: user dataframe
-  prior_spec = NULL,
-
-  # advanced trigger
-  advanced = NULL
+    m.prec.shape = NULL, m.prec.rate = NULL,
+    y.prec.shape = NULL, y.prec.rate = NULL,
+    a.coef.hyperprec.shape = NULL, a.coef.hyperprec.rate = NULL,
+    b.coef.hyperprec.shape = NULL, b.coef.hyperprec.rate = NULL,
+    a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
+    b.pip.hyperalpha = NULL, b.pip.hyperbeta = NULL,
+    direct.coef.mean = NULL, direct.coef.precision = NULL,
+    prior_spec = NULL,
+    advanced = NULL
 ) {
-
-  # --- Detect which methods are being invoked ------------------------------
-
+  # --- 1. Detect which methods are being invoked ------------------------------
   named_args_provided <- !all(sapply(list(
     m.prec.shape, m.prec.rate,
     y.prec.shape, y.prec.rate,
@@ -65,36 +66,34 @@ make_parms_main <- function(
     direct.coef.mean, direct.coef.precision
   ), is.null))
 
-  # --- Route ---------------------------------------------------------------
+  # --- 2. Route by Priority ---------------------------------------------------
 
-  # Method: advanced = "interactive" → wizard → method 2 path
+  # High Priority: Interactive Wizard
   if (!is.null(advanced) && advanced == "interactive") {
     if (named_args_provided) {
-      warning("Named arguments are ignored when advanced = 'interactive'. The wizard will be used instead.")
+      warning("Named arguments are ignored when advanced = 'interactive'.")
     }
     if (!is.null(prior_spec)) {
-      warning("'prior_spec' is ignored when advanced = 'interactive'. The wizard will be used instead.")
+      warning("'prior_spec' is ignored when advanced = 'interactive'.")
     }
-    prior_spec <- run_parms_wizard()
-    if (is.null(prior_spec)) {
-      # User cancelled the wizard — fall back to defaults silently
+
+    prior_spec_wizard <- run_parms_wizard()
+
+    if (is.null(prior_spec_wizard)) {
       return(.make_default_parms())
     }
-    return(make_parms_from_df(prior_spec))
+    return(make_parms_from_df(prior_spec_wizard))
   }
 
-  # Method 2: prior_spec provided
+  # Medium Priority: Custom Dataframe
   if (!is.null(prior_spec)) {
     if (named_args_provided) {
-      warning(
-        "Both 'prior_spec' and named arguments were supplied. ",
-        "'prior_spec' takes priority — named arguments have been ignored."
-      )
+      warning("Both 'prior_spec' and named arguments supplied. 'prior_spec' takes priority.")
     }
     return(make_parms_from_df(prior_spec))
   }
 
-  # Method 1: named args provided
+  # Low Priority: Individual Named Arguments
   if (named_args_provided) {
     return(make_parms_from_argument(
       m.prec.shape = m.prec.shape, m.prec.rate = m.prec.rate,
@@ -109,6 +108,6 @@ make_parms_main <- function(
     ))
   }
 
-  # Method 4: nothing provided → defaults silently
+  # Final Fallback: Defaults
   .make_default_parms()
 }

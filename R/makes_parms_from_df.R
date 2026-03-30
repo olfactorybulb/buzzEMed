@@ -1,13 +1,35 @@
-# Internal function: build a validated parms dataframe from a user-supplied
-# dataframe. The user df should contain columns: priors, distribution,
-# arguments. The template column is always taken from the defaults and cannot
-# be overridden.
-#
-# Behaviour:
-#   - Unrecognised priors (not in defaults): dropped with a warning
-#   - Missing priors (present in defaults, absent in user df): filled from
-#     defaults with a warning listing which ones were filled
-#   - distribution/arguments are validated for type and range
+#' Create Parameter Mapping from Data Frame
+#'
+#' This internal worker function validates and merges a user-supplied
+#' prior specification data frame with the system defaults.
+#'
+#' @param prior_spec A \code{data.frame} containing the columns:
+#' \code{priors}, \code{distribution}, and \code{arguments}.
+#'
+#' @details
+#' This function is called by \code{\link{make_parms_main}} when a user provides
+#' a custom prior data frame (Method 2) or completes the interactive wizard.
+#' It enforces the following logic:
+#' \itemize{
+#'   \item \strong{Structural Validation:} Ensures the input is a data frame
+#'   with all three required columns.
+#'   \item \strong{Prior Filtering:} Any unrecognized priors (those not present
+#'   in system defaults) are dropped with a warning.
+#'   \item \strong{Missing Priors:} Any required priors missing from the user's
+#'   data frame are filled using system defaults, and a warning is issued.
+#'   \item \strong{Immutable Templates:} The \code{template} column is always
+#'   sourced from \code{\link{.make_default_parms}} and cannot be overridden,
+#'   ensuring the JAGS model structure remains valid.
+#'   \item \strong{Argument Validation:} Arguments are split, coerced to
+#'   numeric (except for \eqn{a.coef} and \eqn{b.coef} hyperprior references),
+#'   and checked against distribution-specific range rules.
+#' }
+#'
+#' @return A validated \code{data.frame} with columns: \code{priors},
+#' \code{distribution}, \code{arguments}, and \code{template}.
+#'
+#' @seealso \code{\link{make_parms_main}}, \code{\link{run_parms_wizard}}
+#' @keywords internal
 make_parms_from_df <- function(prior_spec) {
 
   parms <- .make_default_parms()

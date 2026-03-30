@@ -1,23 +1,45 @@
-#' Create Parameter Mapping for Bayesian Models (Internal)
+#' Create Parameter Mapping from Individual Arguments
 #'
-#' This is an internal function that generates a data frame of prior
-#' distributions and their parameters. It is used by [other_function_name()]
-#' to prepare the model structure.
+#' This internal worker function compiles individual numeric prior arguments
+#' into the standard parameters data frame used for JAGS model construction.
 #'
-#' @param m.prec.shape,m.prec.rate Shape and rate for \code{m.prec}.
-#' @param y.prec.shape,y.prec.rate Shape and rate for \code{y.prec}.
-#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Shape and rate for \code{a.coef.hyperprec}.
-#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Shape and rate for \code{b.coef.hyperprec}.
-#' @param a.pip.hyperalpha,a.pip.hyperbeta Alpha and beta for \code{a.pip.hyperprior}.
-#' @param b.pip.hyperalpha,b.pip.hyperbeta Alpha and beta for \code{b.pip.hyperprior}.
-#' @param direct.coef.mean,direct.coef.precision Mean and precision for \code{direct.coef}.
+#' @param m.prec.shape,m.prec.rate Numeric. Shape and rate for the mediator
+#' residual precision (\eqn{m.prec}).
+#' @param y.prec.shape,y.prec.rate Numeric. Shape and rate for the outcome
+#' residual precision (\eqn{y.prec}).
+#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Numeric. Shape and rate
+#' for the \eqn{a} path hyperprecision.
+#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Numeric. Shape and rate
+#' for the \eqn{b} path hyperprecision.
+#' @param a.pip.hyperalpha,a.pip.hyperbeta Numeric. Alpha and beta parameters
+#' for the \eqn{a} path inclusion probability hyperprior.
+#' @param b.pip.hyperalpha,b.pip.hyperbeta Numeric. Alpha and beta parameters
+#' for the \eqn{b} path inclusion probability hyperprior.
+#' @param direct.coef.mean,direct.coef.precision Numeric. Mean and precision
+#' for the direct effect (\eqn{c'}).
 #'
-#' @return A data frame with four columns: \code{priors}, \code{distribution},
-#'   \code{arguments}, and \code{template}.
+#' @details
+#' This function is called by \code{\link{make_parms_main}} when a user provides
+#' individual named arguments. It performs several key tasks:
+#' \itemize{
+#'   \item \strong{Partial Override Handling:} If only one parameter of a pair
+#'   is provided (e.g., shape but not rate), it uses the system default for
+#'   the missing value and issues a warning.
+#'   \item \strong{Coercion:} Ensures all inputs are treated as numeric.
+#'   \item \strong{Validation:} Checks values against distribution-specific
+#'   range rules (e.g., ensuring Gamma shapes are positive).
+#' }
 #'
+#' \strong{Note on Coefficients:} The \eqn{a.coef} and \eqn{b.coef} parameters
+#' are not directly overridable here because they reference hyperprior names
+#' rather than numeric values. To change their behavior, modify their
+#' respective hyperprecisions instead.
+#'
+#' @return A \code{data.frame} containing columns: \code{priors},
+#' \code{distribution}, \code{arguments}, and \code{template}.
+#'
+#' @seealso \code{\link{make_parms_main}}, \code{\link{.make_default_parms}}
 #' @keywords internal
-#' @noRd
-#'
 
 make_parms_from_argument <- function(
     m.prec.shape = NULL, m.prec.rate = NULL,
