@@ -1,4 +1,4 @@
-Package: buzzEMed
+Package: buzzMed
 Version: 0.1.2
 Date: 2026-03-29
 Title: Empirical Bayesian Mediation Analysis with Variable Selection
@@ -30,7 +30,7 @@ Suggests:
 LazyData: yes
 ByteCompile: true
 VignetteBuilder: knitr
-URL: https://github.com/olfactorybulb/buzzEMed
-BugReports: https://github.com/olfactorybulb/buzzEMed/issues
+URL: https://github.com/olfactorybulb/buzzMed
+BugReports: https://github.com/olfactorybulb/buzzMed/issues
 Encoding: UTF-8
 RoxygenNote: 7.3.3

@@ -1,4 +1,4 @@
-# buzzEMed v0.1.2
+# buzzMed v0.1.2
 
 **Exploratory Bayesian Mediation Analysis with Variable Selection**
 
@@ -28,8 +28,8 @@ You can install the development version from GitHub:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("olfactorybulb/buzzEMed")
-library(buzzEMed)
+remotes::install_github("olfactorybulb/buzzMed")
+library(buzzMed)
 ```
 
 ---
@@ -49,7 +49,7 @@ The package provides a primary automated interface and four specialized model-fi
 The most efficient way to run a model is using the lavaan-style formula syntax.
 
 ```r
-library(buzzEMed)
+library(buzzMed)
 
 # Specify your mediation model using lavaan-style syntax
 # M1 and M2 are mediators; X is the predictor; Y is the outcome
@@ -68,7 +68,7 @@ summary(fit)
 ---
 
 ## Citation
-If you use buzzEMed in your research, please cite:
+If you use buzzMed in your research, please cite:
 
 > Shi, D., Dexin Shi, & Amanda J. Fairchild (2023). Variable Selection for Mediators under a Bayesian Mediation Model. Structural Equation Modeling: A Multidisciplinary Journal, 30(6), 887-900. DOI: 10.1080/10705511.2022.2164285
 
