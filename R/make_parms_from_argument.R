@@ -3,6 +3,10 @@
 #' This internal worker function compiles individual numeric prior arguments
 #' into the standard parameters data frame used for JAGS model construction.
 #'
+#' @param a.coef.mean,a.coef.prec Numeric. Mean and precision for the
+#' \eqn{a} path coefficients (\eqn{a.coef}).
+#' @param b.coef.mean,b.coef.prec Numeric. Mean and precision for the
+#' \eqn{b} path coefficients (\eqn{b.coef}).
 #' @param m.prec.shape,m.prec.rate Numeric. Shape and rate for the mediator
 #' residual precision (\eqn{m.prec}).
 #' @param y.prec.shape,y.prec.rate Numeric. Shape and rate for the outcome
@@ -26,11 +30,6 @@
 #'   range rules (e.g., ensuring Gamma shapes are positive).
 #' }
 #'
-#' \strong{Note on Coefficients:} The \eqn{a.coef} and \eqn{b.coef} parameters
-#' are not directly overridable here because they reference hyperprior names
-#' rather than numeric values. To change their behavior, modify their
-#' respective hyperprecisions instead.
-#'
 #' @return A \code{data.frame} containing columns: \code{priors},
 #' \code{distribution}, \code{arguments}, and \code{template}.
 #'
@@ -38,6 +37,8 @@
 #' @keywords internal
 
 make_parms_from_argument <- function(
+    a.coef.mean = NULL, a.coef.prec = NULL,
+    b.coef.mean = NULL, b.coef.prec = NULL,
     m.prec.shape = NULL, m.prec.rate = NULL,
     y.prec.shape = NULL, y.prec.rate = NULL,
     a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
@@ -50,27 +51,27 @@ make_parms_from_argument <- function(
 
   # Override map
   overrides <- list(
-    a.coef           = list(args = c(a.coef.shape, a.coef.rate),
-                       params = c("a.coef.shape","a.coef.rate"),
-                       defaults = c("1","1.0E-6") ),
-    b.coef           = list(args = c(b.coef.shape, b.coef.rate),
-                       params = c("b.coef.shape","b.coef.rate"),
-                       defaults = c("1","1.0E-6") ),
-    m.prec           = list(args = c(m.prec.shape,m.prec.rate),
-                            params = c("m.prec.shape","m.prec.rate"),
-                            defaults = c("1","0.001") ),
-    y.prec           = list(args = c(y.prec.shape,y.prec.rate),
-                            params = c("y.prec.shape","y.prec.rate"),
-                            defaults = c("1","0.001") ),
-    a.pip.hyperprior = list(args = c(a.pip.hyperalpha,a.pip.hyperbeta),
-                            params = c("a.pip.hyperalpha","a.pip.hyperbeta"),
-                            defaults = c("3","3") ),
-    b.pip.hyperprior = list(args = c(b.pip.hyperalpha,b.pip.hyperbeta),
-                            params = c("b.pip.hyperalpha","b.pip.hyperbeta"),
-                            defaults = c("3","3")),
-    direct.coef      = list(args = c(direct.coef.mean,direct.coef.precision),
-                            params = c("direct.coef.mean","direct.coef.precision"),
-                            defaults = c("0","1.0E-6"))
+    a.coef           = list(args     = c(a.coef.mean, a.coef.prec),
+                            params   = c("a.coef.mean", "a.coef.prec"),
+                            defaults = c("0", "1.0E-6")),
+    b.coef           = list(args     = c(b.coef.mean, b.coef.prec),
+                            params   = c("b.coef.mean", "b.coef.prec"),
+                            defaults = c("0", "1.0E-6")),
+    m.prec           = list(args     = c(m.prec.shape, m.prec.rate),
+                            params   = c("m.prec.shape", "m.prec.rate"),
+                            defaults = c("1", "0.001")),
+    y.prec           = list(args     = c(y.prec.shape, y.prec.rate),
+                            params   = c("y.prec.shape", "y.prec.rate"),
+                            defaults = c("1", "0.001")),
+    a.pip.hyperprior = list(args     = c(a.pip.hyperalpha, a.pip.hyperbeta),
+                            params   = c("a.pip.hyperalpha", "a.pip.hyperbeta"),
+                            defaults = c("3", "3")),
+    b.pip.hyperprior = list(args     = c(b.pip.hyperalpha, b.pip.hyperbeta),
+                            params   = c("b.pip.hyperalpha", "b.pip.hyperbeta"),
+                            defaults = c("3", "3")),
+    direct.coef      = list(args     = c(direct.coef.mean, direct.coef.precision),
+                            params   = c("direct.coef.mean", "direct.coef.precision"),
+                            defaults = c("0", "1.0E-6"))
   )
 
   # Apply overrides

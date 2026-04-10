@@ -5,6 +5,10 @@
 \title{Create Parameter Mapping from Individual Arguments}
 \usage{
 make_parms_from_argument(
+  a.coef.mean = NULL,
+  a.coef.prec = NULL,
+  b.coef.mean = NULL,
+  b.coef.prec = NULL,
   m.prec.shape = NULL,
   m.prec.rate = NULL,
   y.prec.shape = NULL,
@@ -18,6 +22,12 @@ make_parms_from_argument(
 )
 }
 \arguments{
+\item{a.coef.mean, a.coef.prec}{Numeric. Mean and precision for the
+\eqn{a} path coefficients (\eqn{a.coef}).}
+
+\item{b.coef.mean, b.coef.prec}{Numeric. Mean and precision for the
+\eqn{b} path coefficients (\eqn{b.coef}).}
+
 \item{m.prec.shape, m.prec.rate}{Numeric. Shape and rate for the mediator
 residual precision (\eqn{m.prec}).}
 
@@ -52,11 +62,6 @@ individual named arguments. It performs several key tasks:
   \item \strong{Validation:} Checks values against distribution-specific
   range rules (e.g., ensuring Gamma shapes are positive).
 }
-
-\strong{Note on Coefficients:} The \eqn{a.coef} and \eqn{b.coef} parameters
-are not directly overridable here because they reference hyperprior names
-rather than numeric values. To change their behavior, modify their
-respective hyperprecisions instead.
 }
 \seealso{
 \code{\link{make_parms_main}}, \code{\link{.make_default_parms}}

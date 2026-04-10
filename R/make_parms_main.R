@@ -51,7 +51,8 @@
 #' @return A validated \code{data.frame} of parameters (priors, distribution,
 #' arguments) ready for model use.
 #'
-#'
+#' @keywords internal
+
 make_parms_main <- function(
     m.prec.shape = NULL, m.prec.rate = NULL,
     y.prec.shape = NULL, y.prec.rate = NULL,
@@ -102,7 +103,7 @@ make_parms_main <- function(
         a.coef.mean = a.coef.mean,
         a.coef.prec = a.coef.prec,
         b.coef.mean = b.coef.mean,
-        b.coef.prec. = b.coef.prec,
+        b.coef.prec = b.coef.prec,
         a.pip.hyperalpha = a.pip.hyperalpha, a.pip.hyperbeta = a.pip.hyperbeta,
         b.pip.hyperalpha = b.pip.hyperalpha, b.pip.hyperbeta = b.pip.hyperbeta,
         direct.coef.mean = direct.coef.mean, direct.coef.precision = direct.coef.precision
@@ -161,7 +162,7 @@ make_parms_main <- function(
       a.coef.mean = a.coef.mean,
       a.coef.prec = a.coef.prec,
       b.coef.mean = b.coef.mean,
-      b.coef.prec. = b.coef.prec,
+      b.coef.prec = b.coef.prec,
       a.pip.hyperalpha = a.pip.hyperalpha, a.pip.hyperbeta = a.pip.hyperbeta,
       b.pip.hyperalpha = b.pip.hyperalpha, b.pip.hyperbeta = b.pip.hyperbeta,
       direct.coef.mean = direct.coef.mean, direct.coef.precision = direct.coef.precision
