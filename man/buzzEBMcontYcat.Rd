@@ -11,10 +11,10 @@ buzzEBMcontYcat(
   advanced = NULL,
   m.prec.shape = NULL,
   m.prec.rate = NULL,
-  a.coef.hyperprec.shape = NULL,
-  a.coef.hyperprec.rate = NULL,
-  b.coef.hyperprec.shape = NULL,
-  b.coef.hyperprec.rate = NULL,
+  a.coef.mean = NULL,
+  a.coef.prec = NULL,
+  b.coef.mean = NULL,
+  b.coef.prec = NULL,
   a.pip.hyperalpha = NULL,
   a.pip.hyperbeta = NULL,
   b.pip.hyperalpha = NULL,
@@ -23,8 +23,6 @@ buzzEBMcontYcat(
   direct.coef.precision = NULL,
   m.prec.init = NULL,
   direct.coef.init = NULL,
-  a.coef.hyperprec.init = NULL,
-  b.coef.hyperprec.init = NULL,
   a.pip.hyperprior.init = NULL,
   b.pip.hyperprior.init = NULL,
   n_chains = NULL,
@@ -51,15 +49,15 @@ the number of mediators. Shape and rate parameters of the Gamma hyperprior
 for the mediator residual precisions. By default, a Gamma distribution is
 used. The default values are 1 and 0.001, respectively.}
 
-\item{a.coef.hyperprec.shape, a.coef.hyperprec.rate}{Numeric scalar or vector.
-Shape and rate parameters of the Gamma hyperprior for the \eqn{a} path
-hyperprecisions. By default, a Gamma distribution is used. The default
-values are 1 and 0.001, respectively.}
+\item{a.coef.mean, a.coef.prec}{Numeric scalar or vector.
+Mean and precision parameters of the Normal prior for the \eqn{a} path effects.
+By default, a Normal distribution is used. The default values are 0 and 1.0E-6,
+respectively.}
 
-\item{b.coef.hyperprec.shape, b.coef.hyperprec.rate}{Numeric scalar or vector.
-Shape and rate parameters of the Gamma hyperprior for the \eqn{b} path
-hyperprecisions. By default, a Gamma distribution is used. The default
-values are 1 and 0.001, respectively.}
+\item{b.coef.mean, b.coef.prec}{Numeric scalar or vector.
+Mean and precision parameters of the Normal prior for the \eqn{b} path effects.
+By default, a Normal distribution is used. The default values are 0 and 1.0E-6,
+respectively.}
 
 \item{a.pip.hyperalpha, a.pip.hyperbeta}{Numeric scalar or vector. Alpha and
 beta parameters for the Beta hyperprior of the \eqn{a} path inclusion

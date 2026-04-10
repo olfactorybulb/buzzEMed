@@ -102,8 +102,6 @@ model {
 
   ## Hyperparameters
   ", prior_strings["y.prec"], "
-  ", prior_strings["a.coef.hyperprec"], "
-  ", prior_strings["b.coef.hyperprec"], "
   ", prior_strings["a.pip.hyperprior"], "
   ", prior_strings["b.pip.hyperprior"], "
 

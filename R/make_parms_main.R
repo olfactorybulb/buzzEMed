@@ -5,7 +5,7 @@
 #' determines which method of parameter construction to use based on user
 #' input, enforcing a strict hierarchy to handle overlapping arguments.
 #'
-#' @param m.prec.shape,m.prec.rate,y.prec.shape,y.prec.rate,a.coef.hyperprec.shape,a.coef.hyperprec.rate,b.coef.hyperprec.shape,b.coef.hyperprec.rate,a.pip.hyperalpha,a.pip.hyperbeta,b.pip.hyperalpha,b.pip.hyperbeta,direct.coef.mean,direct.coef.precision
+#' @param m.prec.shape,m.prec.rate,y.prec.shape,y.prec.rate,a.coef.mean,a.coef.prec,b.coef.mean,b.coef.prec,a.pip.hyperalpha,a.pip.hyperbeta,b.pip.hyperalpha,b.pip.hyperbeta,direct.coef.mean,direct.coef.precision
 #' Numeric. Individual prior parameters (Method 1).
 #' @param prior_spec A data frame provided by the user (Method 2).
 #' @param advanced Character string. If set to \code{"interactive"}, triggers
@@ -47,8 +47,8 @@
 make_parms_main <- function(
     m.prec.shape = NULL, m.prec.rate = NULL,
     y.prec.shape = NULL, y.prec.rate = NULL,
-    a.coef.hyperprec.shape = NULL, a.coef.hyperprec.rate = NULL,
-    b.coef.hyperprec.shape = NULL, b.coef.hyperprec.rate = NULL,
+    a.coef.mean = NULL, a.coef.prec = NULL,
+    b.coef.mean = NULL, b.coef.prec = NULL,
     a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
     b.pip.hyperalpha = NULL, b.pip.hyperbeta = NULL,
     direct.coef.mean = NULL, direct.coef.precision = NULL,
@@ -59,8 +59,8 @@ make_parms_main <- function(
   named_args_provided <- !all(sapply(list(
     m.prec.shape, m.prec.rate,
     y.prec.shape, y.prec.rate,
-    a.coef.hyperprec.shape, a.coef.hyperprec.rate,
-    b.coef.hyperprec.shape, b.coef.hyperprec.rate,
+    a.coef.mean,a.coef.prec,
+    b.coef.mean,b.coef.prec,
     a.pip.hyperalpha, a.pip.hyperbeta,
     b.pip.hyperalpha, b.pip.hyperbeta,
     direct.coef.mean, direct.coef.precision
@@ -98,10 +98,10 @@ make_parms_main <- function(
     return(make_parms_from_argument(
       m.prec.shape = m.prec.shape, m.prec.rate = m.prec.rate,
       y.prec.shape = y.prec.shape, y.prec.rate = y.prec.rate,
-      a.coef.hyperprec.shape = a.coef.hyperprec.shape,
-      a.coef.hyperprec.rate  = a.coef.hyperprec.rate,
-      b.coef.hyperprec.shape = b.coef.hyperprec.shape,
-      b.coef.hyperprec.rate  = b.coef.hyperprec.rate,
+      a.coef.mean = a.coef.mean,
+      a.coef.prec  = a.coef.prec,
+      b.coef.mean = b.coef.mean,
+      b.coef.prec.  = b.coef.prec,
       a.pip.hyperalpha   = a.pip.hyperalpha, a.pip.hyperbeta   = a.pip.hyperbeta,
       b.pip.hyperalpha   = b.pip.hyperalpha, b.pip.hyperbeta   = b.pip.hyperbeta,
       direct.coef.mean   = direct.coef.mean, direct.coef.precision = direct.coef.precision

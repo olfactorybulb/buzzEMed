@@ -7,10 +7,6 @@
 #' residual precision (\eqn{m.prec}).
 #' @param y.prec.shape,y.prec.rate Numeric. Shape and rate for the outcome
 #' residual precision (\eqn{y.prec}).
-#' @param a.coef.hyperprec.shape,a.coef.hyperprec.rate Numeric. Shape and rate
-#' for the \eqn{a} path hyperprecision.
-#' @param b.coef.hyperprec.shape,b.coef.hyperprec.rate Numeric. Shape and rate
-#' for the \eqn{b} path hyperprecision.
 #' @param a.pip.hyperalpha,a.pip.hyperbeta Numeric. Alpha and beta parameters
 #' for the \eqn{a} path inclusion probability hyperprior.
 #' @param b.pip.hyperalpha,b.pip.hyperbeta Numeric. Alpha and beta parameters
@@ -44,34 +40,27 @@
 make_parms_from_argument <- function(
     m.prec.shape = NULL, m.prec.rate = NULL,
     y.prec.shape = NULL, y.prec.rate = NULL,
-    a.coef.hyperprec.shape = NULL, a.coef.hyperprec.rate = NULL,
-    b.coef.hyperprec.shape = NULL, b.coef.hyperprec.rate = NULL,
     a.pip.hyperalpha = NULL, a.pip.hyperbeta = NULL,
     b.pip.hyperalpha = NULL, b.pip.hyperbeta = NULL,
     direct.coef.mean = NULL, direct.coef.precision = NULL
 ) {
 
   # Default dataframe
-  # NOTE: a.coef and b.coef are intentionally excluded from the override map
-  # below. Their arguments ("0,a.coef.hyperprec" and "0,b.coef.hyperprec")
-  # are not numeric values — they reference other priors by name as
-  # hyperpriors. To change their shape, modify a.coef.hyperprec or
-  # b.coef.hyperprec instead.
   parms <- .make_default_parms()
 
   # Override map
   overrides <- list(
+    a.coef           = list(args = c(a.coef.shape, a.coef.rate),
+                       params = c("a.coef.shape","a.coef.rate"),
+                       defaults = c("1","1.0E-6") ),
+    b.coef           = list(args = c(b.coef.shape, b.coef.rate),
+                       params = c("b.coef.shape","b.coef.rate"),
+                       defaults = c("1","1.0E-6") ),
     m.prec           = list(args = c(m.prec.shape,m.prec.rate),
                             params = c("m.prec.shape","m.prec.rate"),
                             defaults = c("1","0.001") ),
     y.prec           = list(args = c(y.prec.shape,y.prec.rate),
                             params = c("y.prec.shape","y.prec.rate"),
-                            defaults = c("1","0.001") ),
-    a.coef.hyperprec = list(args = c(a.coef.hyperprec.shape, a.coef.hyperprec.rate),
-                            params = c("a.coef.hyperprec.shape","a.coef.hyperprec.rate"),
-                            defaults = c("1","0.001") ),
-    b.coef.hyperprec = list(args = c(b.coef.hyperprec.shape, b.coef.hyperprec.rate),
-                            params = c("b.coef.hyperprec.shape","b.coef.hyperprec.rate"),
                             defaults = c("1","0.001") ),
     a.pip.hyperprior = list(args = c(a.pip.hyperalpha,a.pip.hyperbeta),
                             params = c("a.pip.hyperalpha","a.pip.hyperbeta"),

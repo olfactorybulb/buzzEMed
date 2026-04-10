@@ -19,8 +19,6 @@
 #' residual precisions. Default is 1.
 #' @param direct.coef.init Numeric or \code{NULL}. Initial value for the direct
 #' effect (\eqn{c'}). Default is 0.
-#' @param a.coef.hyperprec.init,b.coef.hyperprec.init Numeric or \code{NULL}.
-#' Initial prior hyperprecisions for \eqn{a} and \eqn{b} paths. Default is 1.
 #' @param a.pip.hyperprior.init,b.pip.hyperprior.init Numeric or \code{NULL}.
 #' Initial inclusion probabilities (PIP). Default is 0.5.
 #'
@@ -33,8 +31,6 @@
 #'   \item{\code{b.pip}}{Binary vector of length \code{K}, initialized to 0.}
 #'   \item{\code{y.prec}}{Numeric scalar (if \code{Y_cont = TRUE}).}
 #'   \item{\code{direct.coef}}{Numeric vector of length \code{P}, initialized to \code{direct.coef.init}.}
-#'   \item{\code{a.coef.hyperprec}}{Numeric scalar.}
-#'   \item{\code{b.coef.hyperprec}}{Numeric scalar.}
 #'   \item{\code{a.pip.hyperprior}}{Numeric scalar.}
 #'   \item{\code{b.pip.hyperprior}}{Numeric scalar.}
 #' }
@@ -56,8 +52,6 @@ define_init_values <- function(
     m.prec.init,
     y.prec.init,
     direct.coef.init,
-    a.coef.hyperprec.init,
-    b.coef.hyperprec.init,
     a.pip.hyperprior.init,
     b.pip.hyperprior.init
 ) {
@@ -65,8 +59,6 @@ define_init_values <- function(
   m.prec.init           <- m.prec.init             %||% 1
   y.prec.init           <- y.prec.init             %||% 1
   direct.coef.init      <- direct.coef.init         %||% 0
-  a.coef.hyperprec.init    <- a.coef.hyperprec.init    %||% 1
-  b.coef.hyperprec.init    <- b.coef.hyperprec.init    %||% 1
   a.pip.hyperprior.init    <- a.pip.hyperprior.init    %||% 0.5
   b.pip.hyperprior.init    <- b.pip.hyperprior.init    %||% 0.5
 
@@ -85,8 +77,6 @@ define_init_values <- function(
 
     list(
       direct.coef = rep(direct.coef.init, P),
-      a.coef.hyperprec = a.coef.hyperprec.init,
-      b.coef.hyperprec = b.coef.hyperprec.init,
       a.pip.hyperprior = a.pip.hyperprior.init,
       b.pip.hyperprior = b.pip.hyperprior.init
     )

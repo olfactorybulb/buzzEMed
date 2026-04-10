@@ -9,10 +9,10 @@ make_parms_main(
   m.prec.rate = NULL,
   y.prec.shape = NULL,
   y.prec.rate = NULL,
-  a.coef.hyperprec.shape = NULL,
-  a.coef.hyperprec.rate = NULL,
-  b.coef.hyperprec.shape = NULL,
-  b.coef.hyperprec.rate = NULL,
+  a.coef.mean = NULL,
+  a.coef.prec = NULL,
+  b.coef.mean = NULL,
+  b.coef.prec = NULL,
   a.pip.hyperalpha = NULL,
   a.pip.hyperbeta = NULL,
   b.pip.hyperalpha = NULL,
@@ -24,7 +24,7 @@ make_parms_main(
 )
 }
 \arguments{
-\item{m.prec.shape, m.prec.rate, y.prec.shape, y.prec.rate, a.coef.hyperprec.shape, a.coef.hyperprec.rate, b.coef.hyperprec.shape, b.coef.hyperprec.rate, a.pip.hyperalpha, a.pip.hyperbeta, b.pip.hyperalpha, b.pip.hyperbeta, direct.coef.mean, direct.coef.precision}{Numeric. Individual prior parameters (Method 1).}
+\item{m.prec.shape, m.prec.rate, y.prec.shape, y.prec.rate, a.coef.mean, a.coef.prec, b.coef.mean, b.coef.prec, a.pip.hyperalpha, a.pip.hyperbeta, b.pip.hyperalpha, b.pip.hyperbeta, direct.coef.mean, direct.coef.precision}{Numeric. Individual prior parameters (Method 1).}
 
 \item{prior_spec}{A data frame provided by the user (Method 2).}
 

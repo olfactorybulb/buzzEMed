@@ -11,7 +11,7 @@
 .print_parms_table <- function(parms) {
   cat("\n")
   cat(sprintf("  %-3s  %-20s  %-30s  %-45s\n",
-              "#", "Variable name", "Default prior", "Description"))
+              "#", "Variable name", "Default prior (Enter # to change)", "Description"))
   cat(sprintf("  %-3s  %-20s  %-30s  %-45s\n",
               "--", "--------------------", "------------------------------",
               "---------------------------------------------"))
@@ -112,10 +112,6 @@ run_parms_wizard <- function() {
 
   # --- Step 3: For each selected prior, ask for new distribution + arguments -
 
-  # Note: a.coef and b.coef arguments contain hyperprior variable name
-  # references (e.g. "0,a.coef.hyperprec") rather than numeric values.
-  # The wizard flags this if the user selects them.
-  back_reference_priors <- c("a.coef", "b.coef")
   dist_names <- names(.dist_lookup)  # JAGS names, e.g. "dnorm"
 
   for (idx in selected_idx) {
@@ -126,14 +122,6 @@ run_parms_wizard <- function() {
     cat(sprintf("\n--- Prior: %s ---\n", prior_name))
     cat(sprintf("  Current distribution : %s\n", .dist_label(current_dist_jags)))
     cat(sprintf("  Current arguments    : (%s)\n", current_args))
-
-    if (prior_name %in% back_reference_priors) {
-      cat(sprintf(
-        "  Note: the arguments for '%s' reference another prior by name (%s).\n",
-        prior_name, current_args
-      ))
-      cat("  To change the shape of this prior, modify its hyperprior instead.\n")
-    }
 
     # Show numbered distribution menu
     cat("\n  Available distributions:\n")

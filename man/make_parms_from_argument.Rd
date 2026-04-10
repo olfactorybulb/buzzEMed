@@ -9,10 +9,6 @@ make_parms_from_argument(
   m.prec.rate = NULL,
   y.prec.shape = NULL,
   y.prec.rate = NULL,
-  a.coef.hyperprec.shape = NULL,
-  a.coef.hyperprec.rate = NULL,
-  b.coef.hyperprec.shape = NULL,
-  b.coef.hyperprec.rate = NULL,
   a.pip.hyperalpha = NULL,
   a.pip.hyperbeta = NULL,
   b.pip.hyperalpha = NULL,
@@ -27,12 +23,6 @@ residual precision (\eqn{m.prec}).}
 
 \item{y.prec.shape, y.prec.rate}{Numeric. Shape and rate for the outcome
 residual precision (\eqn{y.prec}).}
-
-\item{a.coef.hyperprec.shape, a.coef.hyperprec.rate}{Numeric. Shape and rate
-for the \eqn{a} path hyperprecision.}
-
-\item{b.coef.hyperprec.shape, b.coef.hyperprec.rate}{Numeric. Shape and rate
-for the \eqn{b} path hyperprecision.}
 
 \item{a.pip.hyperalpha, a.pip.hyperbeta}{Numeric. Alpha and beta parameters
 for the \eqn{a} path inclusion probability hyperprior.}

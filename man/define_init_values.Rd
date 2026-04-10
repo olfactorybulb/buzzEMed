@@ -12,8 +12,6 @@ define_init_values(
   m.prec.init,
   y.prec.init,
   direct.coef.init,
-  a.coef.hyperprec.init,
-  b.coef.hyperprec.init,
   a.pip.hyperprior.init,
   b.pip.hyperprior.init
 )
@@ -35,9 +33,6 @@ residual precisions. Default is 1.}
 \item{direct.coef.init}{Numeric or \code{NULL}. Initial value for the direct
 effect (\eqn{c'}). Default is 0.}
 
-\item{a.coef.hyperprec.init, b.coef.hyperprec.init}{Numeric or \code{NULL}.
-Initial prior hyperprecisions for \eqn{a} and \eqn{b} paths. Default is 1.}
-
 \item{a.pip.hyperprior.init, b.pip.hyperprior.init}{Numeric or \code{NULL}.
 Initial inclusion probabilities (PIP). Default is 0.5.}
 }
@@ -51,8 +46,6 @@ A named \code{list} of initial values compatible with JAGS:
   \item{\code{b.pip}}{Binary vector of length \code{K}, initialized to 0.}
   \item{\code{y.prec}}{Numeric scalar (if \code{Y_cont = TRUE}).}
   \item{\code{direct.coef}}{Numeric vector of length \code{P}, initialized to \code{direct.coef.init}.}
-  \item{\code{a.coef.hyperprec}}{Numeric scalar.}
-  \item{\code{b.coef.hyperprec}}{Numeric scalar.}
   \item{\code{a.pip.hyperprior}}{Numeric scalar.}
   \item{\code{b.pip.hyperprior}}{Numeric scalar.}
 }

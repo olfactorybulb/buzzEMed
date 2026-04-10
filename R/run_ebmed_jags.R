@@ -65,8 +65,6 @@ run_ebmed_jags <- function(modelstring,
             "a.pip",
             "b.coef",
             "b.pip",
-            "a.coef.hyperprec",
-            "b.coef.hyperprec",
             "a.pip.hyperprior",
             "b.pip.hyperprior")
 

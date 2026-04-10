@@ -17,16 +17,13 @@
 .make_default_parms <- function() {
   data.frame(
     priors       = c("a.coef","b.coef","m.prec","y.prec",
-                     "a.coef.hyperprec","b.coef.hyperprec",
                      "direct.coef","a.pip.hyperprior","b.pip.hyperprior"),
-    distribution = c("dnorm","dnorm","dgamma","dgamma","dgamma",
-                     "dgamma","dnorm","dbeta","dbeta"),
-    arguments    = c("0,a.coef.hyperprec","0,b.coef.hyperprec",
-                     "1,0.001","1,0.001","1,0.001","1,0.001",
+    distribution = c("dnorm","dnorm","dgamma","dgamma","dnorm","dbeta","dbeta"),
+    arguments    = c("0,1.0E-6","0,1.0E-6",
+                     "1,0.001","1,0.001",
                      "0,1.0E-6","3,3","3,3"),
     template     = c("%s[j,p] ~ %s(%s)","%s[j] ~ %s(%s)",
-                     "%s[j] ~ %s(%s)","%s ~ %s(%s)","%s ~ %s(%s)",
-                     "%s ~ %s(%s)","%s[p] ~ %s(%s)",
+                     "%s[j] ~ %s(%s)","%s ~ %s(%s)","%s[p] ~ %s(%s)",
                      "%s ~ %s(%s)","%s ~ %s(%s)"),
     stringsAsFactors = FALSE
   )
@@ -39,8 +36,6 @@
   "b.coef"           = "Coefficient for the b effect.",
   "m.prec"           = "Precision for the mediators.",
   "y.prec"           = "Precision for the outcome.",
-  "a.coef.hyperprec" = "Precision hyperprior for the a effect.",
-  "b.coef.hyperprec" = "Precision hyperprior for the b effect.",
   "direct.coef"      = "Direct effect coefficient.",
   "a.pip.hyperprior" = "Hyperprior for inclusion for the a effect.",
   "b.pip.hyperprior" = "Hyperprior for inclusion for the b effect."

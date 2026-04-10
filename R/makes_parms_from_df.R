@@ -88,27 +88,12 @@ make_parms_from_df <- function(prior_spec) {
     # --- Validate arguments string -------------------------------------------
     # Split the arguments string, coerce each segment to numeric,
     # then range-validate against the declared distribution.
-    # Note: a.coef and b.coef arguments contain hyperprior variable name
-    # references (e.g. "0,a.coef.hyperprec") — skip numeric validation for
-    # those rows since their arguments are not purely numeric.
-    back_reference_priors <- c("a.coef", "b.coef")
-
-    if (!prior_name %in% back_reference_priors) {
-      arg_segments  <- trimws(strsplit(new_args, ",")[[1]])
-      coerced_args  <- mapply(
-        .coerce_numeric,
-        arg_segments,
-        paste0(prior_name, "_arg", seq_along(arg_segments)),
-        SIMPLIFY = FALSE
-      )
-
       .validate_range(
         vals        = coerced_args,
         param_names = paste0(prior_name, "_arg", seq_along(coerced_args)),
         prior_name  = prior_name,
         distribution = new_dist
       )
-    }
 
     # --- Write validated values into parms -----------------------------------
     parms$distribution[row_idx] <- new_dist
