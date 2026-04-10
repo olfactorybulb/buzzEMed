@@ -3,7 +3,7 @@
 #' This internal worker function validates and merges a user-supplied
 #' prior specification data frame with the system defaults.
 #'
-#' @param prior_spec A \code{data.frame} containing the columns:
+#' @param my_prior A \code{data.frame} containing the columns:
 #' \code{priors}, \code{distribution}, and \code{arguments}.
 #'
 #' @details
@@ -30,18 +30,15 @@
 #'
 #' @seealso \code{\link{make_parms_main}}, \code{\link{run_parms_wizard}}
 #' @keywords internal
-make_parms_from_df <- function(prior_spec) {
-
+make_parms_from_df <- function(my_prior) {
   parms <- .make_default_parms()
 
   # --- Input structure checks ------------------------------------------------
-
-  if (!is.data.frame(prior_spec)) {
-    stop("'prior_spec' must be a data.frame with columns: priors, distribution, arguments.")
+  if (!is.data.frame(my_prior)) {
+    stop("'my_prior' must be a data.frame with columns: priors, distribution, arguments.")
   }
-
   required_cols <- c("priors", "distribution", "arguments")
-  missing_cols  <- setdiff(required_cols, names(prior_spec))
+  missing_cols  <- setdiff(required_cols, names(my_prior))
   if (length(missing_cols) > 0) {
     stop(sprintf(
       "User dataframe is missing required column(s): %s.",
@@ -50,23 +47,19 @@ make_parms_from_df <- function(prior_spec) {
   }
 
   # --- Unrecognised priors ---------------------------------------------------
-
-  known_priors    <- parms$priors
-  user_priors     <- prior_spec$priors
-  unknown_priors  <- setdiff(user_priors, known_priors)
-
+  known_priors   <- parms$priors
+  user_priors    <- my_prior$priors
+  unknown_priors <- setdiff(user_priors, known_priors)
   if (length(unknown_priors) > 0) {
     warning(sprintf(
       "The following priors are not recognised and will be ignored: %s.",
       paste(unknown_priors, collapse = ", ")
     ))
-    prior_spec <- prior_spec[prior_spec$priors %in% known_priors, ]
+    my_prior <- my_prior[my_prior$priors %in% known_priors, ]
   }
 
   # --- Missing priors --------------------------------------------------------
-
-  missing_priors <- setdiff(known_priors, prior_spec$priors)
-
+  missing_priors <- setdiff(known_priors, my_prior$priors)
   if (length(missing_priors) > 0) {
     warning(sprintf(
       "The following priors were not found in your dataframe and will use defaults: %s.",
@@ -77,23 +70,28 @@ make_parms_from_df <- function(prior_spec) {
   # --- Merge: left join on priors, always keep default template --------------
   # Walk each row of the user df and apply it to the default parms.
   # Template is never touched — it comes from defaults only.
-
-  for (i in seq_len(nrow(prior_spec))) {
-    prior_name <- prior_spec$priors[i]
+  for (i in seq_len(nrow(my_prior))) {
+    prior_name <- my_prior$priors[i]
     row_idx    <- which(parms$priors == prior_name)
-
-    new_dist <- prior_spec$distribution[i]
-    new_args <- prior_spec$arguments[i]
+    new_dist   <- my_prior$distribution[i]
+    new_args   <- my_prior$arguments[i]
 
     # --- Validate arguments string -------------------------------------------
     # Split the arguments string, coerce each segment to numeric,
     # then range-validate against the declared distribution.
-      .validate_range(
-        vals        = coerced_args,
-        param_names = paste0(prior_name, "_arg", seq_along(coerced_args)),
-        prior_name  = prior_name,
-        distribution = new_dist
-      )
+    raw_args     <- trimws(strsplit(new_args, ",")[[1]])
+    coerced_args <- mapply(
+      .coerce_numeric,
+      val        = raw_args,
+      param_name = paste0(prior_name, "_arg", seq_along(raw_args))
+    )
+
+    .validate_range(
+      vals         = coerced_args,
+      param_names  = paste0(prior_name, "_arg", seq_along(coerced_args)),
+      prior_name   = prior_name,
+      distribution = new_dist
+    )
 
     # --- Write validated values into parms -----------------------------------
     parms$distribution[row_idx] <- new_dist

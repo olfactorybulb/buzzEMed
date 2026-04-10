@@ -4,10 +4,10 @@
 \alias{make_parms_from_df}
 \title{Create Parameter Mapping from Data Frame}
 \usage{
-make_parms_from_df(prior_spec)
+make_parms_from_df(my_prior)
 }
 \arguments{
-\item{prior_spec}{A \code{data.frame} containing the columns:
+\item{my_prior}{A \code{data.frame} containing the columns:
 \code{priors}, \code{distribution}, and \code{arguments}.}
 }
 \value{

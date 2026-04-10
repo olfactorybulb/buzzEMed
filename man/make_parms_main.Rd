@@ -19,17 +19,19 @@ make_parms_main(
   b.pip.hyperbeta = NULL,
   direct.coef.mean = NULL,
   direct.coef.precision = NULL,
-  prior_spec = NULL,
+  my_prior = NULL,
   advanced = NULL
 )
 }
 \arguments{
 \item{m.prec.shape, m.prec.rate, y.prec.shape, y.prec.rate, a.coef.mean, a.coef.prec, b.coef.mean, b.coef.prec, a.pip.hyperalpha, a.pip.hyperbeta, b.pip.hyperalpha, b.pip.hyperbeta, direct.coef.mean, direct.coef.precision}{Numeric. Individual prior parameters (Method 1).}
 
-\item{prior_spec}{A data frame provided by the user (Method 2).}
+\item{my_prior}{A data frame provided by the user (Method 2).}
 
-\item{advanced}{Character string. If set to \code{"interactive"}, triggers
-the CLI wizard (Highest Priority).}
+\item{advanced}{Controls routing override behavior. Acceptable values:
+\code{NULL} (default standard routing), \code{"interactive"} (CLI wizard),
+\code{"myprior"} (use \code{my_prior} directly), or \code{FALSE} (force
+system defaults).}
 }
 \value{
 A validated \code{data.frame} of parameters (priors, distribution,
@@ -43,6 +45,13 @@ input, enforcing a strict hierarchy to handle overlapping arguments.
 \details{
 The function evaluates inputs in the following **Priority Order**:
 \enumerate{
+  \item \strong{Skip to Named Arguments (Trigger: \code{advanced = FALSE})}
+    \itemize{
+      \item Bypasses \code{my_prior} and the wizard entirely.
+      \item If named arguments are provided, calls \code{make_parms_from_argument}.
+      \item If no named arguments are provided, falls back to system defaults.
+      \item \emph{Note:} \code{my_prior} is ignored with a warning.
+    }
   \item \strong{Interactive Wizard (Trigger: \code{advanced = "interactive"})}
     \itemize{
       \item Calls \code{\link{run_parms_wizard}}.
@@ -51,21 +60,20 @@ The function evaluates inputs in the following **Priority Order**:
       \item If the user cancels, it falls back to system defaults.
       \item \emph{Note:} All other arguments are ignored with a warning.
     }
-  \item \strong{User Dataframe (Trigger: \code{prior_spec} is not NULL)}
+  \item \strong{Use my_prior Directly (Trigger: \code{advanced = "myprior"})}
     \itemize{
-      \item Validates the user-provided dataframe.
-      \item Passes it to \code{make_parms_from_df}.
-      \item \emph{Note:} Individual named arguments are ignored with a warning.
+      \item Requires \code{my_prior} to be non-NULL; errors otherwise.
+      \item Passes \code{my_prior} directly to \code{make_parms_from_df}.
+      \item \emph{Note:} Named arguments are ignored with a warning.
     }
-  \item \strong{Named Arguments (Trigger: any \code{Method 1} arg is not NULL)}
+  \item \strong{Standard Routing (Trigger: \code{advanced = NULL})}
     \itemize{
-      \item Compiles all individual arguments into a parameters dataframe.
-      \item Calls \code{make_parms_from_argument}.
-    }
-  \item \strong{System Defaults (Fallback)}
-    \itemize{
-      \item If no triggers are met, it silently returns
-            \code{\link{.make_default_parms}}.
+      \item \strong{User Dataframe:} if \code{my_prior} is not NULL, validates
+            and passes it to \code{make_parms_from_df}. Named arguments are
+            ignored with a warning.
+      \item \strong{Named Arguments:} if any Method 1 arg is not NULL, compiles
+            them and calls \code{make_parms_from_argument}.
+      \item \strong{System Defaults:} silent fallback if nothing else is provided.
     }
 }
 }

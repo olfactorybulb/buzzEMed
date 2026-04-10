@@ -11,7 +11,7 @@
 #' @param model A description of the model to be fitted. This is typically a
 #' formula or a character string using \code{lavaan} syntax (e.g., \code{Y ~ M + X}).
 #' @param dataset A \code{data.frame} containing the variables specified in the model.
-#' @param prior_spec Optional \code{data.frame} containing custom prior specifications.
+#' @param my_prior Optional \code{data.frame} containing custom prior specifications.
 #' Run \code{parms <- run_parms_wizard()} to see the required structure.
 #' @param advanced Character. Use \code{"interactive"} for an interactive wizard
 #' to choose parameter distributions, or leave \code{NULL} for defaults.
@@ -99,7 +99,7 @@
 buzzEBMcontYcont <- function(
     model,
     dataset,
-    prior_spec = NULL, advanced = NULL,
+    my_prior = NULL, advanced = NULL,
     m.prec.shape = NULL, m.prec.rate = NULL,
     y.prec.shape = NULL, y.prec.rate = NULL,
     a.coef.mean = NULL, a.coef.prec = NULL,
@@ -149,7 +149,7 @@ buzzEBMcontYcont <- function(
     b.pip.hyperbeta  = b.pip.hyperbeta,
     direct.coef.mean = direct.coef.mean,
     direct.coef.precision = direct.coef.precision,
-    prior_spec  = prior_spec,
+    my_prior = my_prior,
     advanced = advanced
     )
 

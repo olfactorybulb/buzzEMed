@@ -7,7 +7,7 @@
 buzzEBMcatYcont(
   model,
   dataset,
-  prior_spec = NULL,
+  my_prior = NULL,
   advanced = NULL,
   y.prec.shape = NULL,
   y.prec.rate = NULL,
@@ -38,7 +38,7 @@ formula or a character string using \code{lavaan} syntax (e.g., \code{Y ~ M + X}
 
 \item{dataset}{A \code{data.frame} containing the variables specified in the model.}
 
-\item{prior_spec}{Optional \code{data.frame} containing custom prior specifications.
+\item{my_prior}{Optional \code{data.frame} containing custom prior specifications.
 Run \code{parms <- run_parms_wizard()} to see the required structure.}
 
 \item{advanced}{Character. Use \code{"interactive"} for an interactive wizard

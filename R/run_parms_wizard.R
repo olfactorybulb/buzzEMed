@@ -56,7 +56,7 @@
 #'
 #' @return A \code{data.frame} with columns \code{priors}, \code{distribution},
 #' and \code{arguments}. This dataframe is formatted to be passed directly
-#' to the \code{prior_spec} argument in \code{\link{buzzEBMedAuto}} and
+#' to the \code{my_prior} argument in \code{\link{buzzEBMedAuto}} and
 #' related fitting functions.
 #'
 #' @note
@@ -68,12 +68,12 @@
 #' @examples
 #' \dontrun{
 #' # Launch the wizard
-#' my_priors <- run_parms_wizard()
+#' custom_priors <- run_parms_wizard()
 #'
 #' # Use the resulting object in a model
 #' fit <- buzzEBMedAuto(model = "Y ~ M + X",
 #'                      dataset = my_data,
-#'                      prior_spec = my_priors)
+#'                      my_prior = custom_priors)
 #' }
 #'
 #' @export
